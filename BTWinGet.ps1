@@ -28,6 +28,7 @@ Requires winget. Also you might need to run "Set-ExecutionPolicy Unrestricted" t
 #Version 1.1.0
 # Written by MrDataWolf
 # Tested and co-developed by Gabriel
+# Get the latest version at https://github.com/mrdatawolf/BTWinGet
 
 # List of applications ids to install. Note: install we use id to be specific, uninstall uses name
  $apps = @("Mozilla.Firefox", "Google.Chrome")
