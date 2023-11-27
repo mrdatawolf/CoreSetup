@@ -1,2 +1,4 @@
 # BTWinGet
-Uses winget to uninstall apps we don't want on systems and installs various apps we want in different use cases.
+Uses winget to uninstall apps we don't want on systems.
+Also uses winget to installs various apps we want.
+Also updates applications if we want
