@@ -1,6 +1,6 @@
 ﻿<#
 .SYNOPSIS
-A script to handle the common installation tasks with new computers
+A script to handle the common tasks with client computers
 
 .DESCRIPTION
 It will install the base applications we always want and will also uninstall the normal set as well as letting us do optional installed for Ops and Dev computers.
@@ -21,7 +21,7 @@ Update installed applications.
 btWinGet -o
 
 .NOTES
-Requires winget. Also you miught need to run "Set-ExecutionPolicy Unrestricted" to use powershell scripts.
+Requires winget. Also you might need to run "Set-ExecutionPolicy Unrestricted" to use powershell scripts.
 
 #>
 #Biztech Consulting - 2023
@@ -36,7 +36,7 @@ Requires winget. Also you miught need to run "Set-ExecutionPolicy Unrestricted" 
  $optionalApps = @("SonicWALL.NetExtender", "Microsoft.Powershell", "tightvnc")
  $optionalAppsWithComplications = @("Microsoft 365")
 #dev installs
- $devApps = @("git.git","vscode", "github desktop")
+ $devApps = @("git.git","vscode", "github desktop", "JanDeDobbeleer.OhMyPosh")
 
 # List of applications names to install. Note: uninstall uses name because the id cane change, install uses id
 # Uninstall applications
