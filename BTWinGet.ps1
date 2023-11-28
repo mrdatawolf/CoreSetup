@@ -17,8 +17,17 @@ Uninstall common applications.
 .PARAMETER --updates
 Update installed applications.
 
+.PARAMETER --noauto
+If set the autogathering of info will be skipped.
+
+.PARAMETER --nobase
+If set we will not install the base apps (like firefox)
+
 .EXAMPLE
 btWinGet -o
+
+.EXAMPLE
+btWinGet --noauto --nobase
 
 .NOTES
 Requires winget. Also you might need to run "Set-ExecutionPolicy Unrestricted" to use powershell scripts.
@@ -29,7 +38,7 @@ Requires winget. Also you might need to run "Set-ExecutionPolicy Unrestricted" t
 # Tested and co-developed by Gabriel
 # Get the latest version at https://github.com/mrdatawolf/BTWinGet
  # Define the version number
- $versionNumber = "1.1.0"
+ $versionNumber = "1.2.0"
 # List of applications ids to install. Note: install we use id to be specific, uninstall uses name
  $apps = @("Mozilla.Firefox", "Google.Chrome")
  $appThatNeedWingetSourceDeclared = @("Adobe Acrobat Reader DC")
@@ -70,7 +79,7 @@ function Invoke-Sanity-Checks {
 
     # Check if winget is installed
     try {
-        $winget = Get-Command winget -ErrorAction Stop
+        Get-Command winget -ErrorAction Stop
         Write-Host "Winget is installed so we can continue."  -ForegroundColor Green
     } catch {
         Write-Host "Winget is not installed. This is complicated. Good luck!" -ForegroundColor Red
@@ -113,7 +122,7 @@ function Uninstall-Apps {
         $app = $apps[$i]
         Write-Progress -Activity "Uninstalling applications - $app" -Status "$percentComplete% Complete:" -PercentComplete $percentComplete
         # Check if the application is installed
-        $installedApp = winget list --name $app
+        winget list --name $app
         if ($LASTEXITCODE -eq 0) {
             winget uninstall $app --silent
             $percentComplete = [Math]::Floor((($i + 1) / $totalApps) * 100)
@@ -225,18 +234,22 @@ function autogatherInfo {
 }
 
 # Display title line
-Write-Host "=============================="
+Write-Host "==============================" -ForegroundColor Cyan
 Write-Host "Biztech Application Script" -ForegroundColor Cyan
-Write-Host "=============================="
+Write-Host "==============================" -ForegroundColor Cyan
 Invoke-Sanity-Checks
-# Prompt user to select a client if no argument is provided
-Write-Host "Choose a client to gather information from:" -ForegroundColor Cyan
-Write-Host "Please select a client:"
-for ($i=0; $i -lt $clients.Length; $i++) {
-    Write-Host "$i. $($clients[$i])"
+if ($args -contains "--noauto") {
+    Write-Host "Skipping base installs" -ForegroundColor Cyan
+} else {
+    # Prompt user to select a client if no argument is provided
+    Write-Host "Choose a client to gather information from:" -ForegroundColor Cyan
+    Write-Host "Please select a client:"
+    for ($i=0; $i -lt $clients.Length; $i++) {
+        Write-Host "$i. $($clients[$i])"
+    }
+    $clientIndex = Read-Host "Enter the number corresponding to the client you want to select"
+    $client = $clients[$clientIndex]
 }
-$clientIndex = Read-Host "Enter the number corresponding to the client you want to select"
-$client = $clients[$clientIndex]
 # Check for optional argument
 #see what the user wants to run
 $optionalInstall = $false
@@ -286,12 +299,17 @@ if ($args -contains "--updates") {
 }
 
 # Install applications
-Write-Output "Installing Base Applications..."
- Install-Apps -apps $apps
-Write-Output "Done Installing Base Applications!"
-Write-Output "Installing Base Applications with special needs"
- Install-Apps -apps $appThatNeedWingetSourceDeclared -source "winget"
-Write-Output "Done installing Base Applications with special needs"
+if ($args -contains "--nobase") {
+    Write-Host "Skipping base applications" -ForegroundColor Cyan
+} else {
+    Write-Host "Installing Base Applications..."
+    Install-Apps -apps $apps
+    Write-Host "Done Installing Base Applications!"
+    Write-Host "Installing Base Applications with special needs."
+    Install-Apps -apps $appThatNeedWingetSourceDeclared -source "winget"
+    Write-Host "Done installing Base Applications with special needs."
+}
+    
 # Install optional applications
 if ($optionalInstall) {
     Write-Output "Installing optional applications..."
@@ -325,6 +343,9 @@ if ($updates) {
     Write-Output "Done Updating Installed Applications!"
 }
 
-Write-Host "Gathering general info on the computer and saving it in the folder you ran this script" --Foreground-Color Cyan
-autogatherInfo
-
+if ($args -contains "--noauto") {
+    Write-Host "Skipping info gathering on computer." -ForegroundColor Cyan
+} else {
+    Write-Host "Gathering general info on the computer and saving it in the folder you ran this script." -ForegroundColor Cyan
+    autogatherInfo
+}
