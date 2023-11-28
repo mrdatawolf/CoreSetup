@@ -25,11 +25,11 @@ Requires winget. Also you might need to run "Set-ExecutionPolicy Unrestricted" t
 
 #>
 #Biztech Consulting - 2023
-#Version 1.1.0
 # Written by MrDataWolf
 # Tested and co-developed by Gabriel
 # Get the latest version at https://github.com/mrdatawolf/BTWinGet
-
+ # Define the version number
+ $versionNumber = "1.1.0"
 # List of applications ids to install. Note: install we use id to be specific, uninstall uses name
  $apps = @("Mozilla.Firefox", "Google.Chrome")
  $appThatNeedWingetSourceDeclared = @("Adobe Acrobat Reader DC")
@@ -44,7 +44,24 @@ Requires winget. Also you might need to run "Set-ExecutionPolicy Unrestricted" t
  $appsToRemove = @("Mail and Calendar", "Spotify Music", "Movies & TV", "Phone Link", "Your Phone", "Game Bar", "LinkedIn", "Skype", "News", "MSN Weather", "Microsoft Family", "xbox", "Xbox Game Speech Window", "Xbox Identity Provider", "Xbox Game Bar Plugin", "Xbox TCUI")
  $dellAppsToRemove = @("Dell SupportAssist", "Dell Digital Delivery Services","Dell Core Services","Dell SupportAssist for Dell Update", "Dell Core Services", "Dell Command | Update for Windows Universal", "Dell Optimizer Core", "Dell SupportAssist Remediation", "Dell SupportAssist for Home PCs", "Dell Digital Delivery", "Dell SupportAssist OS Recovery Plugin for Dell Update")
 
-function Sanity-Checks {
+# Define the progress title
+$progressTitle = "Created by MrDataWolf. Version: $versionNumber"
+
+# Define the list of possible clients
+$clients = @("AE","BP","BM","BNB","BT","CHAMP","EL","FL","GLC","GLF","GPI","HS","JC","JCURL","M1","MP","MTS","MY","ND","NFL","OMEY","POE","POU","PPP","Safe","SLI","SRM","STL","STROM","TRL","VANCE","VL","WC","LCC","Other")
+
+#show progress
+function outputProgress {
+    Param
+    (
+         [Parameter(Mandatory=$true, Position=0)]
+         [string] $Status,
+         [Parameter(Mandatory=$true, Position=1)]
+         [int] $Progress
+    )
+    Write-Progress -Activity $progressTitle -Status $Status -PercentComplete $Progress
+}
+function Invoke-Sanity-Checks {
     # Check if the script is running in PowerShell
     if ($PSVersionTable.PSVersion.Major -lt 5) {
         Write-Output "This script must be run in PowerShell. Please open PowerShell ISE and run the script again."
@@ -54,64 +71,34 @@ function Sanity-Checks {
     # Check if winget is installed
     try {
         $winget = Get-Command winget -ErrorAction Stop
-        Write-Output "Winget is already installed."
+        Write-Host "Winget is installed so we can continue."  -ForegroundColor Green
     } catch {
-        Write-Output "Winget is not installed. This is complicated. Good luck!"
+        Write-Host "Winget is not installed. This is complicated. Good luck!" -ForegroundColor Red
         exit
     }
 }
 function Install-Apps {
     param (
         [Parameter(Mandatory=$true)]
-        [string[]]$apps
+        [string[]]$apps,
+        [string[]]$source
     )
 
     $totalApps = $apps.Count
-    $percentComplete = 0
     for ($i = 0; $i -lt $totalApps; $i++) {
         $app = $apps[$i]
-        Write-Progress -Activity "Installing applications - $app" -Status "$percentComplete% Complete:" -PercentComplete $percentComplete
-        $installedApp = winget list --id $app
+        Write-Progress -Activity "Installing applications - $app" -Status "$([Math]::Floor((($i + 1) / $totalApps) * 100))% Complete:" -PercentComplete ([Math]::Floor((($i + 1) / $totalApps) * 100))
+        winget list --id $app
         if ($LASTEXITCODE -eq 0) {
-            $result = "$app already installed"
-            $percentComplete = [Math]::Floor((($i + 1) / $totalApps) * 100)
+            Write-Host " $app already installed"  -ForegroundColor Cyan
         } else {
-            $output = winget install $app --silent
-            $percentComplete = [Math]::Floor((($i + 1) / $totalApps) * 100)
+            if ($source) { winget install $app -s $source --silent } else { winget install $app --silent }
             if ($LASTEXITCODE -eq 0) {
-                $result = "$app installed"
+                Write-Host "$app installed" -ForegroundColor Green
             } else {
-                $result = "$app failed to install"
+                Write-Host "$app failed to install" -ForegroundColor Red
             }
         }
-        Write-Host " $result"
-    }
-}
-function Install-Apps-Source-Winget {
-    param (
-        [Parameter(Mandatory=$true)]
-        [string[]]$apps
-    )
-
-    $totalApps = $apps.Count
-    $percentComplete = 0
-    for ($i = 0; $i -lt $totalApps; $i++) {
-        $app = $apps[$i]
-        Write-Progress -Activity "Installing applications - $app" -Status "$percentComplete% Complete:" -PercentComplete $percentComplete
-        $installedApp = winget list --id $app
-        if ($LASTEXITCODE -eq 0) {
-            $result = "$app already installed"
-            $percentComplete = [Math]::Floor((($i + 1) / $totalApps) * 100)
-        } else {
-            $output = winget install $app -s winget
-            $percentComplete = [Math]::Floor((($i + 1) / $totalApps) * 100)
-            if ($LASTEXITCODE -eq 0) {
-                $result = "$app installed"
-            } else {
-                $result = "$app failed to install"
-            }
-        }
-        Write-Host " $result"
     }
 }
 function Uninstall-Apps {
@@ -128,18 +115,17 @@ function Uninstall-Apps {
         # Check if the application is installed
         $installedApp = winget list --name $app
         if ($LASTEXITCODE -eq 0) {
-            $output = winget uninstall $app --silent
+            winget uninstall $app --silent
             $percentComplete = [Math]::Floor((($i + 1) / $totalApps) * 100)
             if ($LASTEXITCODE -eq 0) {
-                $result = "$app uninstalled"
+                Write-Host "$app uninstalled" -ForegroundColor Green
             } else {
-                $result = "$app failed to uninstall"
+                Write-Host "$app failed to uninstall" -ForegroundColor Cyan
             }
         } else {
             $percentComplete = [Math]::Floor((($i + 1) / $totalApps) * 100)
-            $result = "$app not installed"
+            Write-Host "$app not installed" -ForegroundColor Cyan
         }
-        Write-Host " $result"
     }
 }
 function runUpdates {
@@ -149,27 +135,116 @@ function runUpdates {
     winget update --all --silent
 }
 
+function autogatherInfo {
+    outputProgress "Getting Date..." 05
+    # Get the current date and format it as yyyy-MM-dd
+    $date = Get-Date -Format "yyyy-MM-dd"
+
+    outputProgress "Getting OS version..." 10
+    # Get the Windows version number
+    $osVersion = (Get-CimInstance -ClassName Win32_OperatingSystem).Version
+
+    outputProgress "Getting HOSTNAME tag..." 15
+    # Get the hostname for the computer
+    $hostname = $env:computername
+
+    outputProgress "Getting service tag..." 20
+    # Get the Dell service tag
+    $serviceTag = Invoke-Command -ScriptBlock {
+        Get-CimInstance -ClassName win32_bios | Select-Object -ExpandProperty SerialNumber
+    }
+
+    outputProgress "Getting IP addresses..." 30
+    # Get all network IP addresses
+    $ipAddresses = Invoke-Command -ScriptBlock {
+        Get-NetIPAddress | Where-Object {$_.AddressFamily -eq "IPv4"} | Select-Object InterfaceAlias,IpAddress
+    }
+
+    outputProgress "Getting current user..." 40
+    # Get the currently logged in user
+    $currentUser = $env:USERNAME
+
+    outputProgress "Getting shared drives..." 50
+    # Get a list of shared drives and their locations
+    $shares = Invoke-Command -ScriptBlock {
+        (Get-SmbShare | Where-Object {$_.ScopeName -eq "Default"}).Name
+    }
+
+    outputProgress "Getting remote shares..." 60
+    # Get a list of remote shares and their paths
+    $remoteShares = Invoke-Command -ScriptBlock {
+        (Get-PSDrive -PSProvider FileSystem | Where-Object {$_.DisplayRoot -like "\\*\*"}).DisplayRoot
+    }
+
+    outputProgress "Getting printers..." 70
+    # Get a list of printers and their names
+    $printers = Invoke-Command -ScriptBlock {
+        Get-Printer | Select-Object Name
+    }
+
+    outputProgress "Getting drives..." 80
+    # Get a list of all drives and their size and free space
+    $drives = Invoke-Command -ScriptBlock {
+        Get-PSDrive -PSProvider 'FileSystem' | Select-Object Name, @{Name="Size(GB)";Expression={[math]::Round($_.Used/1GB)}}, @{Name="FreeSpace(GB)";Expression={[math]::Round($_.Free/1GB)}}
+    }
+
+    outputProgress "Getting domain..." 90
+    # Get the domain the computer is connected to
+    $domain = $env:USERDOMAIN
+
+    outputProgress "Finished gathering data!" 100
+    # Create a custom object to store the service tag, IP addresses, machine name, logged in user, printers, shared drives, remote shares, and folders
+    $serviceInfoObj = @{
+        "Date Create"    = $date
+        "Script Version" = $versionNumber
+        "OS Version"     = $osVersion
+        "ClientName"     = $client
+        "Domain"         = $domain
+        "ServiceTag"     = $serviceTag
+        "IPAddresses"    = $ipAddresses
+        "LoggedInUser"   = $currentUser
+        "Printers"       = $printers
+        "Shares"         = $shares
+        "RemoteShares"   = $remoteShares
+        "Drives"         = $drives
+        "Hostname"       = $hostname
+    }
+
+    # Convert the object to a JSON string
+    $serviceInfoJson = ConvertTo-Json $serviceInfoObj -Depth 4
+
+    # Define the default file path and name to the user's desktop
+    #$jsonFilePath = "$env:USERPROFILE\Desktop\SystemInfo_$hostname.json"
+    $jsonFilePath = ".\SystemInfo~$client~$domain~$hostname.json"
+
+
+    # Write the service information to the CSV file
+    $serviceInfoJson | Out-File -FilePath $jsonFilePath -Encoding ascii
+
+    Write-Host "Service information was saved to $jsonFilePath"
+}
+
 # Display title line
 Write-Host "=============================="
-Write-Host "Biztech Application Script"
+Write-Host "Biztech Application Script" -ForegroundColor Cyan
 Write-Host "=============================="
-
-Sanity-Checks
+Invoke-Sanity-Checks
+# Prompt user to select a client if no argument is provided
+Write-Host "Choose a client to gather information from:" -ForegroundColor Cyan
+Write-Host "Please select a client:"
+for ($i=0; $i -lt $clients.Length; $i++) {
+    Write-Host "$i. $($clients[$i])"
+}
+$clientIndex = Read-Host "Enter the number corresponding to the client you want to select"
+$client = $clients[$clientIndex]
 # Check for optional argument
-Write-Host "*****"
-Write-Host "If this is the first time you have ran this on a system:"
-Write-Host "*!*! Fully run the Windows and Dell updates before this!!!!! It needs the Windows updates and Dell apps will be removed. *!*!"
-Write-Host " Before you continue go into the MS store and search for winget.  You want to update 'App Installer' there then continue here"
-Write-Host " Open a powershell prompt and type winget list.  Answer yes."
-Write-Host "*****"
-
 #see what the user wants to run
 $optionalInstall = $false
 $optionalExtendedInstall = $false
 if ($args -contains "-o") {
     $optionalInstall = $true
 } else {
-    $userInput = Read-Host "Do you want to install optional programs (netextender etc)? (y/N)"
+    $userInput = Read-Host "Do you want to install optional programs (netextender etc)? (y/N)" 
     if ($userInput -eq "y") {
         $optionalInstall = $true
 
@@ -215,7 +290,7 @@ Write-Output "Installing Base Applications..."
  Install-Apps -apps $apps
 Write-Output "Done Installing Base Applications!"
 Write-Output "Installing Base Applications with special needs"
- Install-Apps-Source-Winget -apps $appThatNeedWingetSourceDeclared
+ Install-Apps -apps $appThatNeedWingetSourceDeclared -source "winget"
 Write-Output "Done installing Base Applications with special needs"
 # Install optional applications
 if ($optionalInstall) {
@@ -231,7 +306,7 @@ if ($optionalExtendedInstall) {
 # Install dev applications
 if ($devInstall) {
     Write-Output "Installing Developer Applications..."
-     Install-Apps-Source-Winget -apps $devApps
+     Install-Apps -apps $devApps -source "winget"
     Write-Output "Done installing developer applications!"
 }
 
@@ -249,3 +324,7 @@ if ($updates) {
      runUpdates
     Write-Output "Done Updating Installed Applications!"
 }
+
+Write-Host "Gathering general info on the computer and saving it in the folder you ran this script" --Foreground-Color Cyan
+autogatherInfo
+
