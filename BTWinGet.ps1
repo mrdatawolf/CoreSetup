@@ -32,7 +32,7 @@ Requires winget. Also you might need to run "Set-ExecutionPolicy Unrestricted" t
 
 # List of applications ids to install. Note: install we use id to be specific, uninstall uses name
  $apps = @("Mozilla.Firefox", "Google.Chrome")
- $appThatNeedWingetSourceDeclared = @("Adobe Acrobat Reader DC")
+ $appThatNeedWingetSourceDeclared = @("Adobe Acrobat Reader DC", "Adobe Acrobat Reader DC.32bit")
 # Optional installs
  $optionalApps = @("SonicWALL.NetExtender", "Microsoft.Powershell", "tightvnc")
  $optionalAppsWithComplications = @("Microsoft 365")
