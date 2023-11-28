@@ -9,3 +9,11 @@ Because it's a powershell script you need to allow unsigned scripts to run on yo
 These might help...
 Win10 - Set-ExecutionPolicy Unrestricted
 Win11 - Set-ExecutionPolicy -Scope CurrentUser Unrestricted
+
+and this might be even better (https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_signing?view=powershell-7.4):
+To run an unsigned script, use the Unblock-File cmdlet or use the following procedure.
+
+    Save the script file on your computer.
+    Click Start, click My Computer, and locate the saved script file.
+    Right-click the script file, and then click Properties.
+    Click Unblock.
