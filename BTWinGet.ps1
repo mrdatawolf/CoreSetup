@@ -79,7 +79,7 @@ function Invoke-Sanity-Checks {
 
     # Check if winget is installed
     try {
-        Get-Command winget -ErrorAction Stop
+        $wingetCheck = Get-Command winget -ErrorAction Stop
         Write-Host "Winget is installed so we can continue."  -ForegroundColor Green
     } catch {
         Write-Host "Winget is not installed. This is complicated. Good luck!" -ForegroundColor Red
@@ -97,7 +97,7 @@ function Install-Apps {
     for ($i = 0; $i -lt $totalApps; $i++) {
         $app = $apps[$i]
         Write-Progress -Activity "Installing applications - $app" -Status "$([Math]::Floor((($i + 1) / $totalApps) * 100))% Complete:" -PercentComplete ([Math]::Floor((($i + 1) / $totalApps) * 100))
-        winget list --id $app
+        $wingetList = winget list --id $app
         if ($LASTEXITCODE -eq 0) {
             Write-Host " $app already installed"  -ForegroundColor Cyan
         } else {
@@ -122,9 +122,9 @@ function Uninstall-Apps {
         $app = $apps[$i]
         Write-Progress -Activity "Uninstalling applications - $app" -Status "$percentComplete% Complete:" -PercentComplete $percentComplete
         # Check if the application is installed
-        winget list --name $app
+        $wingetList = winget list --name $app
         if ($LASTEXITCODE -eq 0) {
-            winget uninstall $app --silent
+            $wingetUninstall = winget uninstall $app --silent
             $percentComplete = [Math]::Floor((($i + 1) / $totalApps) * 100)
             if ($LASTEXITCODE -eq 0) {
                 Write-Host "$app uninstalled" -ForegroundColor Green
