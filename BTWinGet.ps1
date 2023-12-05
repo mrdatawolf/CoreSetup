@@ -148,59 +148,48 @@ function autogatherInfo {
     outputProgress "Getting Date..." 05
     # Get the current date and format it as yyyy-MM-dd
     $date = Get-Date -Format "yyyy-MM-dd"
-
     outputProgress "Getting OS version..." 10
     # Get the Windows version number
     $osVersion = (Get-CimInstance -ClassName Win32_OperatingSystem).Version
-
     outputProgress "Getting HOSTNAME tag..." 15
     # Get the hostname for the computer
     $hostname = $env:computername
-
     outputProgress "Getting service tag..." 20
     # Get the Dell service tag
     $serviceTag = Invoke-Command -ScriptBlock {
         Get-CimInstance -ClassName win32_bios | Select-Object -ExpandProperty SerialNumber
     }
-
     outputProgress "Getting IP addresses..." 30
     # Get all network IP addresses
     $ipAddresses = Invoke-Command -ScriptBlock {
         Get-NetIPAddress | Where-Object {$_.AddressFamily -eq "IPv4"} | Select-Object InterfaceAlias,IpAddress
     }
-
     outputProgress "Getting current user..." 40
     # Get the currently logged in user
     $currentUser = $env:USERNAME
-
     outputProgress "Getting shared drives..." 50
     # Get a list of shared drives and their locations
     $shares = Invoke-Command -ScriptBlock {
         (Get-SmbShare | Where-Object {$_.ScopeName -eq "Default"}).Name
     }
-
     outputProgress "Getting remote shares..." 60
     # Get a list of remote shares and their paths
     $remoteShares = Invoke-Command -ScriptBlock {
         (Get-PSDrive -PSProvider FileSystem | Where-Object {$_.DisplayRoot -like "\\*\*"}).DisplayRoot
     }
-
     outputProgress "Getting printers..." 70
     # Get a list of printers and their names
     $printers = Invoke-Command -ScriptBlock {
         Get-Printer | Select-Object Name
     }
-
     outputProgress "Getting drives..." 80
     # Get a list of all drives and their size and free space
-    $drives = Invoke-Command -ScriptBlock {
-        Get-PSDrive -PSProvider 'FileSystem' | Select-Object Name, @{Name="Size(GB)";Expression={[math]::Round($_.Used/1GB)}}, @{Name="FreeSpace(GB)";Expression={[math]::Round($_.Free/1GB)}}
-    }
-
+    $drives = @(Invoke-Command -ScriptBlock {
+    Get-PSDrive -PSProvider 'FileSystem' | Select-Object Name, @{Name="Size(GB)";Expression={[math]::Round($_.Used/1GB)}}, @{Name="FreeSpace(GB)";Expression={[math]::Round($_.Free/1GB)}}
+    })
     outputProgress "Getting domain..." 90
     # Get the domain the computer is connected to
     $domain = $env:USERDOMAIN
-
     outputProgress "Finished gathering data!" 100
     # Create a custom object to store the service tag, IP addresses, machine name, logged in user, printers, shared drives, remote shares, and folders
     $serviceInfoObj = @{
