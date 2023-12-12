@@ -46,7 +46,7 @@ Requires winget. Also you might need to run "Set-ExecutionPolicy Unrestricted" t
  $optionalApps = @("SonicWALL.NetExtender", "Microsoft.Powershell", "tightvnc")
  $optionalAppsWithComplications = @("Microsoft 365")
 #dev installs
- $devApps = @("git.git","vscode", "github desktop", "JanDeDobbeleer.OhMyPosh")
+ $devApps = @("git.git","vscode", "github desktop", "JanDeDobbeleer.OhMyPosh", "nvm-windows")
 
 # List of applications names to install. Note: uninstall uses name because the id cane change, install uses id
 # Uninstall applications
