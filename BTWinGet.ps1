@@ -34,12 +34,12 @@ Requires winget. Also you might need to run "Set-ExecutionPolicy Unrestricted" t
 
 #>
 #Requires -RunAsAdministrator
-#Biztech Consulting - 2023
+#Biztech Consulting - 2024
 # Written by MrDataWolf
 # Tested and co-developed by Gabriel
 # Get the latest version at https://github.com/mrdatawolf/BTWinGet
  # Define the version number
- $versionNumber = "1.2.3"
+ $versionNumber = "1.2.4"
 # List of applications ids to install. Note: install we use id to be specific, uninstall uses name
  $apps = @("Mozilla.Firefox", "Google.Chrome")
  $appThatNeedWingetSourceDeclared = @("Adobe Acrobat Reader DC")
@@ -245,7 +245,11 @@ $optionalExtendedInstall = $false
 if ($args -contains "-o") {
     $optionalInstall = $true
 } else {
-    $userInput = Read-Host "Do you want to install optional programs (netextender etc)? (y/N)" 
+    Write-Host "Do you want to install the following optional programs?"
+    for ($i=0; $i -lt $optionalApps.Length; $i++) {
+        Write-Host "$i. $($optionalApps[$i])"
+    }
+    $userInput = Read-Host " (y/N)" 
     if ($userInput -eq "y") {
         $optionalInstall = $true
 
@@ -260,7 +264,11 @@ $devInstall = $false
 if ($args -contains "-d") {
     $devInstall = $true
 } else {
-    $userInput = Read-Host "Do you want to install dev programs (vscode etc)? (y/N)"
+    Write-Host "Do you want to install the following Developer programs?"
+    for ($i=0; $i -lt $devApps.Length; $i++) {
+        Write-Host "$i. $($devApps[$i])"
+    }
+    $userInput = Read-Host "(y/N)"
     if ($userInput -eq "y") {
         $devInstall = $true
     }
@@ -270,7 +278,11 @@ $uninstall = $false
 if ($args -contains "--uninstalls") {
     $uninstall = $true
 } else {
-    $userInput = Read-Host "Do you want to remove programs BT does not want in systems (spotify etc)? (y/N)"
+    Write-Host "Do you want to UNinstall the following programs?"
+    for ($i=0; $i -lt $appsToRemove.Length; $i++) {
+        Write-Host "$i. $($appsToRemove[$i])"
+    }
+    $userInput = Read-Host "(y/N)"
     if ($userInput -eq "y") {
         $uninstall = $true
     }
