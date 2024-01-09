@@ -39,7 +39,7 @@ Requires winget. Also you might need to run "Set-ExecutionPolicy Unrestricted" t
 # Tested and co-developed by Gabriel
 # Get the latest version at https://github.com/mrdatawolf/BTWinGet
  # Define the version number
- $versionNumber = "1.2.4"
+ $versionNumber = "1.2.5"
 # List of applications ids to install. Note: install we use id to be specific, uninstall uses name
  $apps = @("Mozilla.Firefox", "Google.Chrome")
  $appThatNeedWingetSourceDeclared = @("Adobe Acrobat Reader DC")
@@ -220,6 +220,10 @@ function autogatherInfo {
     # Write the service information to the CSV file
     $serviceInfoJson | Out-File -FilePath $jsonFilePath -Encoding ascii
 $serviceInfoObj | Select-Object * | Out-GridView -Title "Service information was saved to $jsonFilePath"}
+
+#check that we have current winget sources
+Write-Host "updating winget sources"
+winget source update
 
 # Display title line
 Write-Host "==============================" -ForegroundColor Cyan
