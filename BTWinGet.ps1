@@ -33,12 +33,13 @@ btWinGet --noauto --nobase
 Requires winget. Also you might need to run "Set-ExecutionPolicy Unrestricted" to use powershell scripts.
 
 #>
+#Requires -RunAsAdministrator
 #Biztech Consulting - 2023
 # Written by MrDataWolf
 # Tested and co-developed by Gabriel
 # Get the latest version at https://github.com/mrdatawolf/BTWinGet
  # Define the version number
- $versionNumber = "1.2.2"
+ $versionNumber = "1.2.3"
 # List of applications ids to install. Note: install we use id to be specific, uninstall uses name
  $apps = @("Mozilla.Firefox", "Google.Chrome")
  $appThatNeedWingetSourceDeclared = @("Adobe Acrobat Reader DC")
@@ -218,9 +219,7 @@ function autogatherInfo {
 
     # Write the service information to the CSV file
     $serviceInfoJson | Out-File -FilePath $jsonFilePath -Encoding ascii
-
-    Write-Host "Service information was saved to $jsonFilePath"
-}
+$serviceInfoObj | Select-Object * | Out-GridView -Title "Service information was saved to $jsonFilePath"}
 
 # Display title line
 Write-Host "==============================" -ForegroundColor Cyan
