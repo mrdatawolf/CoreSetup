@@ -5,8 +5,7 @@ Also updates applications if we want
 Get the latest version at https://github.com/mrdatawolf/BTWinGet
 
 **Because it's a powershell script you need to allow it to run on your system.  If you don't know what this means then DO NOT USE this script.**
-**Fully run the Windows and Dell updates before this!!!!! It needs the Windows updates and Dell apps will be removed.**
-**Before you continue go into the MS store and search for winget.  You want to update 'App Installer' there then continue here**
+**Fully run the Windows and Dell updates before this!!!!! It needs the Windows updates to be done and Dell apps will be removed.**
 **Open a powershell prompt and type winget list.  Answer yes.**
 
 From (https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_signing?view=powershell-7.4):
