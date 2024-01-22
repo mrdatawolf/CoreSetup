@@ -37,8 +37,8 @@ Requires winget. Also you might need to run "Set-ExecutionPolicy Unrestricted" t
 
 #>
 #Requires -RunAsAdministrator
-#Biztech Consulting - 2024
-# Written by MrDataWolf
+#Patrick Moon - 2024
+# Written by Patrick Moon
 # Tested and co-developed by Gabriel
 # Get the latest version at https://github.com/mrdatawolf/CoreSetup
  # Define the version number
@@ -61,7 +61,7 @@ Requires winget. Also you might need to run "Set-ExecutionPolicy Unrestricted" t
 $progressTitle = "Created by MrDataWolf. Version: $versionNumber"
 
 # Define the list of possible clients
-$clients = @("AE","BP","BM","BNB","BT","CHAMP","EL","FL","GLC","GLF","GPI","HS","JC","JCURL","M1","MP","MTS","MY","ND","NFL","OMEY","POE","POU","PPP","Safe","SLI","SRM","STL","STROM","TRL","VANCE","VL","WC","LCC","Other")
+$clients = @("test")
 
 #show progress
 function outputProgress {
@@ -258,10 +258,25 @@ if ($args -contains "--noauto") {
     $clientIndex = Read-Host "Enter the number corresponding to the client you want to select"
     $client = $clients[$clientIndex]
 }
-# Check for optional argument
+
 #see what the user wants to run
+#Check if they want to do the main apps
+$appsInstall = $true
 $optionalInstall = $false
 $optionalExtendedInstall = $false
+if ($args -contains "--basic") {
+    $appsInstall = $true
+} else {
+    Write-Host "Do you want to install the following programs?"
+    for ($i=0; $i -lt $apps.Length; $i++) {
+        Write-Host "$i. $($apps[$i])"
+    }
+    $userInput = Read-Host " (Y/n)" 
+    if ($userInput -eq "n") {
+        $appsInstall = $true
+    }
+}
+# Check for optional argument
 if ($args -contains "-o") {
     $optionalInstall = $true
 } else {
@@ -300,7 +315,7 @@ if ($args -contains "--uninstalls") {
 } else {
     Write-Host "Do you want to UNinstall the following programs?"
     for ($i=0; $i -lt $appsToRemove.Length; $i++) {
-        Write-Host "$i. $($appsToRemove[$i])"
+        Write-Host "$i. $($appsToRemove[$i])" -ForegroundColor Red
     }
     $userInput = Read-Host "(y/N)"
     if ($userInput -eq "y") {
@@ -318,7 +333,7 @@ if ($args -contains "--updates") {
     }
 }
 
-# Check for dev argument
+# Check for power argument
 $powerAdjust = $false
 if ($args -contains "--power") {
     $powerAdjust = $true
@@ -330,16 +345,28 @@ if ($args -contains "--power") {
     }
 }
 
-# Install applications
-if ($args -contains "--nobase") {
-    Write-Host "Skipping base applications" -ForegroundColor Cyan
+# Check for noauto argument
+$json = $false
+if ($args -contains "--json") {
+    $json = $true
 } else {
+    Write-Host "Do you want to save a json report of the system?"
+    $userInput = Read-Host "(y/N)"
+    if ($userInput -eq "y") {
+        $json = $true
+    }
+}
+
+# Install applications
+if ($appsInstall) {
     Write-Host "Installing Base Applications..."
     Install-Apps -apps $apps
     Write-Host "Done Installing Base Applications!"
     Write-Host "Installing Base Applications with special needs."
     Install-Apps -apps $appThatNeedWingetSourceDeclared -source "winget"
     Write-Host "Done installing Base Applications with special needs."
+} else {
+    Write-Host "Skipping base applications" -ForegroundColor Cyan
 }
     
 # Install optional applications
@@ -390,9 +417,7 @@ if ($powerAdjust) {
     Write-Output "Done updating power settings!"
 }
 
-if ($args -contains "--noauto") {
-    Write-Host "Skipping info gathering on computer." -ForegroundColor Cyan
-} else {
+if ($json) {
     Write-Host "Gathering general info on the computer and saving it in the folder you ran this script." -ForegroundColor Cyan
     autogatherInfo
-}
+} 
