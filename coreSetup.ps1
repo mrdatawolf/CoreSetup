@@ -231,7 +231,8 @@ function autogatherInfo {
 
     # Write the service information to the CSV file
     $serviceInfoJson | Out-File -FilePath $jsonFilePath -Encoding ascii
-$serviceInfoObj | Select-Object * | Out-GridView -Title "Service information was saved to $jsonFilePath"}
+$serviceInfoObj | Select-Object * | Out-GridView -Title "Service information was saved to $jsonFilePath"
+}
 
 #check that we have current winget sources
 Write-Host "updating winget sources"
