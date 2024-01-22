@@ -273,7 +273,7 @@ if ($args -contains "--basic") {
     }
     $userInput = Read-Host " (Y/n)" 
     if ($userInput -eq "n") {
-        $appsInstall = $true
+        $appsInstall = $false
     }
 }
 # Check for optional argument
@@ -421,3 +421,5 @@ if ($json) {
     Write-Host "Gathering general info on the computer and saving it in the folder you ran this script." -ForegroundColor Cyan
     autogatherInfo
 } 
+
+Write-Host "Completed." -ForegroundColor Cyan
