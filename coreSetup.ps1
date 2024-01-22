@@ -24,10 +24,10 @@ If set the autogathering of info will be skipped.
 If set we will not install the base apps (like firefox)
 
 .EXAMPLE
-btWinGet -o
+coreSetup -o
 
 .EXAMPLE
-btWinGet --noauto --nobase
+coreSetup --noauto --nobase
 
 .NOTES
 Requires winget. Also you might need to run "Set-ExecutionPolicy Unrestricted" to use powershell scripts.
