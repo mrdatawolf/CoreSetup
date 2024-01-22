@@ -21,7 +21,10 @@ Update installed applications.
 If set the autogathering of info will be skipped.
 
 .PARAMETER --nobase
-If set we will not install the base apps (like firefox)
+If set we will not install the base apps (like firefox).
+
+.PARAMETER --power
+Apply the power changes for hibernate etc.
 
 .EXAMPLE
 coreSetup -o
@@ -317,7 +320,7 @@ if ($args -contains "--updates") {
 
 # Check for dev argument
 $powerAdjust = $false
-if ($args -contains "-p") {
+if ($args -contains "--power") {
     $powerAdjust = $true
 } else {
     Write-Host "Do you want to power settings for maximum performace?"
@@ -375,8 +378,8 @@ if ($updates) {
 # update power settings
 if ($powerAdjust) {
     Write-Output "Updating power settings..."
-        powercfg.exe -x -monitor-timeout-ac 0
-        powercfg.exe -x -monitor-timeout-dc 0
+        powercfg.exe -x -monitor-timeout-ac 60
+        powercfg.exe -x -monitor-timeout-dc 60
         powercfg.exe -x -disk-timeout-ac 0
         powercfg.exe -x -disk-timeout-dc 0
         powercfg.exe -x -standby-timeout-ac 0
