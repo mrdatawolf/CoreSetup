@@ -37,9 +37,9 @@ Requires winget. Also you might need to run "Set-ExecutionPolicy Unrestricted" t
 #Biztech Consulting - 2024
 # Written by MrDataWolf
 # Tested and co-developed by Gabriel
-# Get the latest version at https://github.com/mrdatawolf/BTWinGet
+# Get the latest version at https://github.com/mrdatawolf/CoreSetup
  # Define the version number
- $versionNumber = "1.2.5"
+ $versionNumber = "1.3"
 # List of applications ids to install. Note: install we use id to be specific, uninstall uses name
  $apps = @("Mozilla.Firefox", "Google.Chrome")
  $appThatNeedWingetSourceDeclared = @("Adobe Acrobat Reader DC")
@@ -145,6 +145,18 @@ function runUpdates {
     winget update --all --silent
 }
 
+function powerSetup {
+    powercfg.exe -x -monitor-timeout-ac 0
+    powercfg.exe -x -monitor-timeout-dc 0
+    powercfg.exe -x -disk-timeout-ac 0
+    powercfg.exe -x -disk-timeout-dc 0
+    powercfg.exe -x -standby-timeout-ac 0
+    powercfg.exe -x -standby-timeout-dc 0
+    powercfg.exe -x -hibernate-timeout-ac 0
+    powercfg.exe -x -hibernate-timeout-dc 0
+    powercfg.exe -h off
+}
+
 function autogatherInfo {
     outputProgress "Getting Date..." 05
     # Get the current date and format it as yyyy-MM-dd
@@ -227,7 +239,7 @@ winget source update
 
 # Display title line
 Write-Host "==============================" -ForegroundColor Cyan
-Write-Host "Biztech Application Script" -ForegroundColor Cyan
+Write-Host "Core Setup Script" -ForegroundColor Cyan
 Write-Host "==============================" -ForegroundColor Cyan
 Invoke-Sanity-Checks
 if ($args -contains "--noauto") {
@@ -302,6 +314,18 @@ if ($args -contains "--updates") {
     }
 }
 
+# Check for dev argument
+$powerAdjust = $false
+if ($args -contains "-p") {
+    $powerAdjust = $true
+} else {
+    Write-Host "Do you want to power settings for maximum performace?"
+    $userInput = Read-Host "(y/N)"
+    if ($userInput -eq "y") {
+        $powerAdjust = $true
+    }
+}
+
 # Install applications
 if ($args -contains "--nobase") {
     Write-Host "Skipping base applications" -ForegroundColor Cyan
@@ -345,6 +369,21 @@ if ($updates) {
     Write-Output "Updating Installed Applications..."
      runUpdates
     Write-Output "Done Updating Installed Applications!"
+}
+
+# update power settings
+if ($powerAdjust) {
+    Write-Output "Updating power settings..."
+        powercfg.exe -x -monitor-timeout-ac 0
+        powercfg.exe -x -monitor-timeout-dc 0
+        powercfg.exe -x -disk-timeout-ac 0
+        powercfg.exe -x -disk-timeout-dc 0
+        powercfg.exe -x -standby-timeout-ac 0
+        powercfg.exe -x -standby-timeout-dc 0
+        powercfg.exe -x -hibernate-timeout-ac 0
+        powercfg.exe -x -hibernate-timeout-dc 0
+        powercfg.exe -h off
+    Write-Output "Done updating power settings!"
 }
 
 if ($args -contains "--noauto") {
