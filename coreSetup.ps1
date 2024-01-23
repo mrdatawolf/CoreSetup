@@ -271,6 +271,9 @@ if ($args -contains "--basic") {
     for ($i=0; $i -lt $apps.Length; $i++) {
         Write-Host "$i. $($apps[$i])"
     }
+    for ($i=0; $i -lt $apps.Length; $i++) {
+        Write-Host "$i. $($appThatNeedWingetSourceDeclared[$i])"
+    }
     $userInput = Read-Host " (Y/n)" 
     if ($userInput -eq "n") {
         $appsInstall = $false
@@ -299,7 +302,7 @@ $devInstall = $false
 if ($args -contains "-d") {
     $devInstall = $true
 } else {
-    Write-Host "Do you want to install the following Developer programs?"
+    Write-Host "Do you want to install the following developer programs?"
     for ($i=0; $i -lt $devApps.Length; $i++) {
         Write-Host "$i. $($devApps[$i])"
     }
@@ -338,7 +341,7 @@ $powerAdjust = $false
 if ($args -contains "--power") {
     $powerAdjust = $true
 } else {
-    Write-Host "Do you want to power settings for maximum performace?"
+    Write-Host "Do you want to power settings for maximum performance?"
     $userInput = Read-Host "(y/N)"
     if ($userInput -eq "y") {
         $powerAdjust = $true
@@ -359,12 +362,12 @@ if ($args -contains "--json") {
 
 # Install applications
 if ($appsInstall) {
-    Write-Host "Installing Base Applications..."
+    Write-Host "Installing base applications..."
     Install-Apps -apps $apps
-    Write-Host "Done Installing Base Applications!"
-    Write-Host "Installing Base Applications with special needs."
+    Write-Host "Done Installing base applications!"
+    Write-Host "Installing base applications with special needs."
     Install-Apps -apps $appThatNeedWingetSourceDeclared -source "winget"
-    Write-Host "Done installing Base Applications with special needs."
+    Write-Host "Done installing base applications with special needs."
 } else {
     Write-Host "Skipping base applications" -ForegroundColor Cyan
 }
@@ -373,7 +376,7 @@ if ($appsInstall) {
 if ($optionalInstall) {
     Write-Output "Installing optional applications..."
      Install-Apps -apps $optionalApps
-    Write-Output "Done Installing optional applications!"
+    Write-Output "Done installing optional applications!"
 }
 if ($optionalExtendedInstall) {
     Write-Output "Installing other optional applications..."
@@ -389,17 +392,17 @@ if ($devInstall) {
 
 # Remove apps
 if ($uninstall) {
-    Write-Output "Uninstalling General Applications..."
+    Write-Output "Uninstalling general applications..."
      Uninstall-Apps -apps $appsToRemove
-    Write-Output "Done Uninstalling Applications!"
-    Write-Output "Uninstalling Dell Specific Applications..."
+    Write-Output "Done Uninstalling general applications!"
+    Write-Output "Uninstalling Dell specific applications..."
      Uninstall-Apps -apps $dellAppsToRemove
-    Write-Output "Done uninstalling upplications!"
+    Write-Output "Done uninstalling applications!"
 }
 if ($updates) {
-    Write-Output "Updating Installed Applications..."
+    Write-Output "Updating installed applications..."
      runUpdates
-    Write-Output "Done Updating Installed Applications!"
+    Write-Output "Done updating installed applications!"
 }
 
 # update power settings
@@ -418,7 +421,7 @@ if ($powerAdjust) {
 }
 
 if ($json) {
-    Write-Host "Gathering general info on the computer and saving it in the folder you ran this script." -ForegroundColor Cyan
+    Write-Host "Gathering general info on the computer and saving it in the folder you ran this script from." -ForegroundColor Cyan
     autogatherInfo
 } 
 
