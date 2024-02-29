@@ -20,3 +20,9 @@ To run an unsigned script, use the Unblock-File cmdlet or use the following proc
 These are other ways to allow scripts...
 Win10 - Set-ExecutionPolicy Unrestricted
 Win11 - Set-ExecutionPolicy -Scope CurrentUser Unrestricted
+
+# common solutions for first runs
+If it fails saying scripts can't be run:
+set-executionpolicy remotesigned 
+then Y when it asks how to change it.
+If it is just sitting on the winget update task press y and enter.  It is acutally asking if you agree to the souce agreement terms. if you want to actually see the original prompt open a powershell window and do winget list instead.
