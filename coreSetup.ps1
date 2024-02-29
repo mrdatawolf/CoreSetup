@@ -44,7 +44,8 @@ Requires winget. Also you might need to run "Set-ExecutionPolicy Unrestricted" t
  # Define the version number
  $versionNumber = "1.3"
 # List of applications ids to install. Note: install we use id to be specific, uninstall uses name
- $apps = @("Mozilla.Firefox", "Google.Chrome")
+ $apps = @("Mozilla.Firefox")
+ $appsScopeRequired = @("Google.Chrome")
  $appThatNeedWingetSourceDeclared = @("Adobe Acrobat Reader DC")
 # Optional installs
  $optionalApps = @("SonicWALL.NetExtender", "Microsoft.Powershell", "tightvnc")
@@ -271,8 +272,11 @@ if ($args -contains "--basic") {
     for ($i=0; $i -lt $apps.Length; $i++) {
         Write-Host "$i. $($apps[$i])"
     }
-    for ($i=0; $i -lt $apps.Length; $i++) {
+    for ($i=0; $i -lt $appThatNeedWingetSourceDeclared.Length; $i++) {
         Write-Host "$i. $($appThatNeedWingetSourceDeclared[$i])"
+    }
+    for ($i=0; $i -lt $appsScopeRequired.Length; $i++) {
+        Write-Host "$i. $($appsScopeRequired[$i])"
     }
     $userInput = Read-Host " (Y/n)" 
     if ($userInput -eq "n") {
@@ -368,6 +372,9 @@ if ($appsInstall) {
     Write-Host "Installing base applications with special needs."
     Install-Apps -apps $appThatNeedWingetSourceDeclared -source "winget"
     Write-Host "Done installing base applications with special needs."
+    Write-Host "Installing base applications that require scope declaration."
+    Install-Apps -apps $appsScopeRequired -source "winget" -scope "machine"
+    Write-Host "Done installing base applications that require scope declaration."
 } else {
     Write-Host "Skipping base applications" -ForegroundColor Cyan
 }
