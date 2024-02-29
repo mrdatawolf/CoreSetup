@@ -36,7 +36,8 @@ coreSetup --noauto --nobase
 Requires winget. Also you might need to run "Set-ExecutionPolicy Unrestricted" to use powershell scripts.
 
 #>
-#Requires -RunAsAdministrator
+Start-Process -FilePath "powershell" -ArgumentList "-File .\coreSetup.ps1" -Verb RunAs
+
 #Patrick Moon - 2024
 # Written by Patrick Moon
 # Tested and co-developed by Gabriel
@@ -87,7 +88,7 @@ function Invoke-Sanity-Checks {
         $wingetCheck = Get-Command winget -ErrorAction Stop
         Write-Host "Winget is installed so we can continue."  -ForegroundColor Green
     } catch {
-        Write-Host "Winget is not installed. This is complicated. Good luck!" -ForegroundColor Red
+        Write-Host "Winget is either not installed or had an error. This is complicated. Good luck! Hint: check if App Installer is updated in the windows store" -ForegroundColor Red
         exit
     }
 }
