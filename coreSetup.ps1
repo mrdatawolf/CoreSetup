@@ -42,8 +42,6 @@ Start-Process -FilePath "powershell" -ArgumentList "-File .\coreSetup.ps1" -Verb
 # Written by Patrick Moon
 # Tested and co-developed by Gabriel
 # Get the latest version at https://github.com/mrdatawolf/CoreSetup
- # Define the version number
- $versionNumber = "1.3"
 # List of applications ids to install. Note: install we use id to be specific, uninstall uses name
  $apps = @("Mozilla.Firefox")
  $appsScopeRequired = @("Google.Chrome")
@@ -57,7 +55,7 @@ Start-Process -FilePath "powershell" -ArgumentList "-File .\coreSetup.ps1" -Verb
 # List of applications names to install. Note: uninstall uses name because the id cane change, install uses id
 # Uninstall applications
  $appsToRemove = @("Mail and Calendar", "Spotify Music", "Movies & TV", "Phone Link", "Your Phone", "Game Bar", "LinkedIn", "Skype", "News", "MSN Weather", "Microsoft Family", "xbox", "Xbox Game Speech Window", "Xbox Identity Provider", "Xbox Game Bar Plugin", "Xbox TCUI")
- $dellAppsToRemove = @("Dell SupportAssist", "Dell Digital Delivery Services","Dell Core Services","Dell SupportAssist for Dell Update", "Dell Core Services", "Dell Command | Update for Windows Universal", "Dell Optimizer Core", "Dell SupportAssist Remediation", "Dell SupportAssist for Home PCs", "Dell Digital Delivery", "Dell SupportAssist OS Recovery Plugin for Dell Update", "Dell Display Manager 2.2", "Dell Peripheral Manger", "Dell Trusted Device Agent", "Dell Watchdog Timer")
+ $dellAppsToRemove = @("Dell SupportAssist", "Dell Digital Delivery Services","Dell Core Services","Dell SupportAssist for Dell Update", "Dell Core Services", "Dell Command | Update for Windows Universal", "Dell Optimizer Core", "Dell SupportAssist Remediation", "Dell SupportAssist for Home PCs", "Dell Digital Delivery", "Dell SupportAssist OS Recovery Plugin for Dell Update", "Dell Display Manager", "Dell PremierColor", "Dell Peripheral Manger", "Dell Trusted Device Agent", "Dell Watchdog Timer")
 
 # Define the progress title
 $progressTitle = "Created by MrDataWolf. Version: $versionNumber"
