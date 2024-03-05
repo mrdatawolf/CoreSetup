@@ -252,7 +252,7 @@ function autogatherInfo {
 
     # Define the default file path and name to the user's desktop
     #$jsonFilePath = "$env:USERPROFILE\Desktop\SystemInfo_$hostname.json"
-    $jsonFilePath = ".\SystemInfo~$client~$domain~$hostname.json"
+    $jsonFilePath = "~\Desktop\SystemInfo~$client~$domain~$hostname.json"
 
 
     # Write the service information to the CSV file
