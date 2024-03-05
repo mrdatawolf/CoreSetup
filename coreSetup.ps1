@@ -36,8 +36,13 @@ coreSetup --noauto --nobase
 Requires winget. Also you might need to run "Set-ExecutionPolicy Unrestricted" to use powershell scripts.
 
 #>
-Start-Process -FilePath "powershell" -ArgumentList "-File .\coreSetup.ps1" -Verb RunAs
-
+# Check if we are running as administrator
+if (-NOT ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")) {
+    # orginal: Start-Process -FilePath "powershell" -ArgumentList "-File .\coreSetup.ps1" -Verb RunAs
+    # We are not running as administrator, so start a new process with 'RunAs'
+    Start-Process powershell.exe "-File",($myinvocation.MyCommand.Definition) -Verb RunAs
+    exit
+}
 #Patrick Moon - 2024
 # Written by Patrick Moon
 # Tested and co-developed by Gabriel
@@ -111,8 +116,8 @@ function Install-Apps {
     param (
         [Parameter(Mandatory=$true)]
         [string[]]$apps,
-        [string[]]$source,
-        [string[]]$scope
+        [string]$source,
+        [string]$scope
     )
 
     $totalApps = $apps.Count
