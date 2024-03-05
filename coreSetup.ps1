@@ -90,11 +90,29 @@ function Invoke-Sanity-Checks {
         exit
     }
 }
+function Install-App {
+    param (
+        [Parameter(Mandatory=$true)]
+        [string]$app,
+        [string]$source,
+        [string]$scope
+    )
+
+    if ($source -and $scope) { 
+        winget install $app -s $source --scope $scope --silent 
+    } elseif ($source) { 
+        winget install $app -s $source --silent 
+    } else { 
+        winget install $app --silent 
+    }
+}
+
 function Install-Apps {
     param (
         [Parameter(Mandatory=$true)]
         [string[]]$apps,
-        [string[]]$source
+        [string[]]$source,
+        [string[]]$scope
     )
 
     $totalApps = $apps.Count
@@ -105,7 +123,7 @@ function Install-Apps {
         if ($LASTEXITCODE -eq 0) {
             Write-Host " $app already installed"  -ForegroundColor Cyan
         } else {
-            if ($source) { winget install $app -s $source --silent } else { winget install $app --silent }
+            Install-App -app $app -source $source -scope $scope
             if ($LASTEXITCODE -eq 0) {
                 Write-Host "$app installed" -ForegroundColor Green
             } else {
