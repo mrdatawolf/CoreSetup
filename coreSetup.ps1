@@ -40,7 +40,7 @@ Requires winget. Also you might need to run "Set-ExecutionPolicy Unrestricted" t
 if (-NOT ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")) {
     # orginal: Start-Process -FilePath "powershell" -ArgumentList "-File .\coreSetup.ps1" -Verb RunAs
     # We are not running as administrator, so start a new process with 'RunAs'
-    Start-Process powershell.exe "-File",($myinvocation.MyCommand.Definition) -Verb RunAs
+    Start-Process powershell.exe "-File", ($myinvocation.MyCommand.Definition) -Verb RunAs
     exit
 }
 #Patrick Moon - 2024
@@ -48,19 +48,56 @@ if (-NOT ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdent
 # Tested and co-developed by Gabriel
 # Get the latest version at https://github.com/mrdatawolf/CoreSetup
 # List of applications ids to install. Note: install we use id to be specific, uninstall uses name
- $apps = @("Mozilla.Firefox")
- $appsScopeRequired = @("Google.Chrome")
- $appThatNeedWingetSourceDeclared = @("Adobe Acrobat Reader DC")
+$apps = @("Mozilla.Firefox")
+$appsScopeRequired = @("Google.Chrome")
+$appThatNeedWingetSourceDeclared = @("Adobe Acrobat Reader DC")
 # Optional installs
- $optionalApps = @("SonicWALL.NetExtender", "Microsoft.Powershell", "tightvnc")
- $optionalAppsWithComplications = @("Microsoft 365")
+$optionalApps = @("SonicWALL.NetExtender", "Microsoft.Powershell", "tightvnc")
+$optionalAppsWithComplications = @("Microsoft 365")
 #dev installs
- $devApps = @("git.git","vscode", "github desktop", "JanDeDobbeleer.OhMyPosh", "nvm-windows")
+$devApps = @("git.git", "vscode", "github desktop", "JanDeDobbeleer.OhMyPosh", "nvm-windows")
 
 # List of applications names to install. Note: uninstall uses name because the id cane change, install uses id
 # Uninstall applications
- $appsToRemove = @("Mail and Calendar", "Spotify Music", "Movies & TV", "Phone Link", "Your Phone", "Game Bar", "LinkedIn", "Skype", "News", "MSN Weather", "Microsoft Family", "xbox", "Xbox Game Speech Window", "Xbox Identity Provider", "Xbox Game Bar Plugin", "Xbox TCUI")
- $dellAppsToRemove = @("Dell SupportAssist", "Dell Digital Delivery Services","Dell Core Services","Dell SupportAssist for Dell Update", "Dell Core Services", "Dell Command | Update for Windows Universal", "Dell Optimizer Core", "Dell SupportAssist Remediation", "Dell SupportAssist for Home PCs", "Dell Digital Delivery", "Dell SupportAssist OS Recovery Plugin for Dell Update", "Dell Display Manager", "Dell PremierColor", "Dell Peripheral Manger", "Dell Trusted Device Agent", "Dell Watchdog Timer")
+$appsToRemove = @(
+    "Game Bar", 
+    "LinkedIn", 
+    "McAfee Personal Security",
+    "Mail and Calendar", 
+    "Microsoft Family", 
+    "Movies & TV",
+    "MSN Weather", 
+    "News",
+    "Phone Link", 
+    "Skype", 
+    "Spotify Music", 
+    "xbox", 
+    "Xbox Game Speech Window", 
+    "Xbox Game Bar Plugin", 
+    "Xbox Identity Provider", 
+    "Your Phone",
+    "Xbox TCUI"
+)
+$dellAppsToRemove = @(
+    "Dell Command | Update for Windows Universal", 
+    "Dell Core Services", 
+    "Dell Core Services", 
+    "Dell Customer Connect"
+    "Dell Digital Delivery", 
+    "Dell Digital Delivery Services", 
+    "Dell Display Manager",
+    "Dell Mobile Connect", 
+    "Dell Optimizer Core",
+    "Dell PremierColor", 
+    "Dell Peripheral Manger", 
+    "Dell SupportAssist", 
+    "Dell SupportAssist for Dell Update", 
+    "Dell SupportAssist for Home PCs", 
+    "Dell SupportAssist OS Recovery Plugin for Dell Update", 
+    "Dell SupportAssist Remediation", 
+    "Dell Trusted Device Agent", 
+    "Dell Watchdog Timer"
+)
 
 # Define the progress title
 $progressTitle = "Created by MrDataWolf. Version: $versionNumber"
@@ -72,10 +109,10 @@ $clients = @("test")
 function outputProgress {
     Param
     (
-         [Parameter(Mandatory=$true, Position=0)]
-         [string] $Status,
-         [Parameter(Mandatory=$true, Position=1)]
-         [int] $Progress
+        [Parameter(Mandatory = $true, Position = 0)]
+        [string] $Status,
+        [Parameter(Mandatory = $true, Position = 1)]
+        [int] $Progress
     )
     Write-Progress -Activity $progressTitle -Status $Status -PercentComplete $Progress
 }
@@ -90,14 +127,15 @@ function Invoke-Sanity-Checks {
     try {
         $wingetCheck = Get-Command winget -ErrorAction Stop
         Write-Host "Winget is installed so we can continue."  -ForegroundColor Green
-    } catch {
+    }
+    catch {
         Write-Host "Winget is either not installed or had an error. This is complicated. Good luck! Hint: check if App Installer is updated in the windows store" -ForegroundColor Red
         exit
     }
 }
 function Install-App {
     param (
-        [Parameter(Mandatory=$true)]
+        [Parameter(Mandatory = $true)]
         [string]$app,
         [string]$source,
         [string]$scope
@@ -105,16 +143,18 @@ function Install-App {
 
     if ($source -and $scope) { 
         winget install $app -s $source --scope $scope --silent 
-    } elseif ($source) { 
+    }
+    elseif ($source) { 
         winget install $app -s $source --silent 
-    } else { 
+    }
+    else { 
         winget install $app --silent 
     }
 }
 
 function Install-Apps {
     param (
-        [Parameter(Mandatory=$true)]
+        [Parameter(Mandatory = $true)]
         [string[]]$apps,
         [string]$source,
         [string]$scope
@@ -127,11 +167,13 @@ function Install-Apps {
         $wingetList = winget list --id $app
         if ($LASTEXITCODE -eq 0) {
             Write-Host " $app already installed"  -ForegroundColor Cyan
-        } else {
+        }
+        else {
             Install-App -app $app -source $source -scope $scope
             if ($LASTEXITCODE -eq 0) {
                 Write-Host "$app installed" -ForegroundColor Green
-            } else {
+            }
+            else {
                 Write-Host "$app failed to install" -ForegroundColor Red
             }
         }
@@ -139,7 +181,7 @@ function Install-Apps {
 }
 function Uninstall-Apps {
     param (
-        [Parameter(Mandatory=$true)]
+        [Parameter(Mandatory = $true)]
         [string[]]$apps
     )
 
@@ -155,10 +197,12 @@ function Uninstall-Apps {
             $percentComplete = [Math]::Floor((($i + 1) / $totalApps) * 100)
             if ($LASTEXITCODE -eq 0) {
                 Write-Host "$app uninstalled" -ForegroundColor Green
-            } else {
+            }
+            else {
                 Write-Host "$app failed to uninstall" -ForegroundColor Cyan
             }
-        } else {
+        }
+        else {
             $percentComplete = [Math]::Floor((($i + 1) / $totalApps) * 100)
             Write-Host "$app not installed" -ForegroundColor Cyan
         }
@@ -201,7 +245,7 @@ function autogatherInfo {
     outputProgress "Getting IP addresses..." 30
     # Get all network IP addresses
     $ipAddresses = Invoke-Command -ScriptBlock {
-        Get-NetIPAddress | Where-Object {$_.AddressFamily -eq "IPv4"} | Select-Object InterfaceAlias,IpAddress
+        Get-NetIPAddress | Where-Object { $_.AddressFamily -eq "IPv4" } | Select-Object InterfaceAlias, IpAddress
     }
     outputProgress "Getting current user..." 40
     # Get the currently logged in user
@@ -209,12 +253,12 @@ function autogatherInfo {
     outputProgress "Getting shared drives..." 50
     # Get a list of shared drives and their locations
     $shares = Invoke-Command -ScriptBlock {
-        (Get-SmbShare | Where-Object {$_.ScopeName -eq "Default"}).Name
+        (Get-SmbShare | Where-Object { $_.ScopeName -eq "Default" }).Name
     }
     outputProgress "Getting remote shares..." 60
     # Get a list of remote shares and their paths
     $remoteShares = Invoke-Command -ScriptBlock {
-        (Get-PSDrive -PSProvider FileSystem | Where-Object {$_.DisplayRoot -like "\\*\*"}).DisplayRoot
+        (Get-PSDrive -PSProvider FileSystem | Where-Object { $_.DisplayRoot -like "\\*\*" }).DisplayRoot
     }
     outputProgress "Getting printers..." 70
     # Get a list of printers and their names
@@ -224,8 +268,8 @@ function autogatherInfo {
     outputProgress "Getting drives..." 80
     # Get a list of all drives and their size and free space
     $drives = @(Invoke-Command -ScriptBlock {
-    Get-PSDrive -PSProvider 'FileSystem' | Select-Object Name, @{Name="Size(GB)";Expression={[math]::Round($_.Used/1GB)}}, @{Name="FreeSpace(GB)";Expression={[math]::Round($_.Free/1GB)}}
-    })
+            Get-PSDrive -PSProvider 'FileSystem' | Select-Object Name, @{Name = "Size(GB)"; Expression = { [math]::Round($_.Used / 1GB) } }, @{Name = "FreeSpace(GB)"; Expression = { [math]::Round($_.Free / 1GB) } }
+        })
     outputProgress "Getting domain..." 90
     # Get the domain the computer is connected to
     $domain = $env:USERDOMAIN
@@ -257,7 +301,7 @@ function autogatherInfo {
 
     # Write the service information to the CSV file
     $serviceInfoJson | Out-File -FilePath $jsonFilePath -Encoding ascii
-$serviceInfoObj | Select-Object * | Out-GridView -Title "Service information was saved to $jsonFilePath"
+    $serviceInfoObj | Select-Object * | Out-GridView -Title "Service information was saved to $jsonFilePath"
 }
 
 #check that we have current winget sources
@@ -271,11 +315,12 @@ Write-Host "==============================" -ForegroundColor Cyan
 Invoke-Sanity-Checks
 if ($args -contains "--noauto") {
     Write-Host "Skipping base installs" -ForegroundColor Cyan
-} else {
+}
+else {
     # Prompt user to select a client if no argument is provided
     Write-Host "Choose a client to gather information from:" -ForegroundColor Cyan
     Write-Host "Please select a client:"
-    for ($i=0; $i -lt $clients.Length; $i++) {
+    for ($i = 0; $i -lt $clients.Length; $i++) {
         Write-Host "$i. $($clients[$i])"
     }
     $clientIndex = Read-Host "Enter the number corresponding to the client you want to select"
@@ -289,15 +334,16 @@ $optionalInstall = $false
 $optionalExtendedInstall = $false
 if ($args -contains "--basic") {
     $appsInstall = $true
-} else {
+}
+else {
     Write-Host "Do you want to install the following programs?"
-    for ($i=0; $i -lt $apps.Length; $i++) {
+    for ($i = 0; $i -lt $apps.Length; $i++) {
         Write-Host "$i. $($apps[$i])"
     }
-    for ($i=0; $i -lt $appThatNeedWingetSourceDeclared.Length; $i++) {
+    for ($i = 0; $i -lt $appThatNeedWingetSourceDeclared.Length; $i++) {
         Write-Host "$i. $($appThatNeedWingetSourceDeclared[$i])"
     }
-    for ($i=0; $i -lt $appsScopeRequired.Length; $i++) {
+    for ($i = 0; $i -lt $appsScopeRequired.Length; $i++) {
         Write-Host "$i. $($appsScopeRequired[$i])"
     }
     $userInput = Read-Host " (Y/n)" 
@@ -308,9 +354,10 @@ if ($args -contains "--basic") {
 # Check for optional argument
 if ($args -contains "-o") {
     $optionalInstall = $true
-} else {
+}
+else {
     Write-Host "Do you want to install the following optional programs?"
-    for ($i=0; $i -lt $optionalApps.Length; $i++) {
+    for ($i = 0; $i -lt $optionalApps.Length; $i++) {
         Write-Host "$i. $($optionalApps[$i])"
     }
     $userInput = Read-Host " (y/N)" 
@@ -327,9 +374,10 @@ if ($args -contains "-o") {
 $devInstall = $false
 if ($args -contains "-d") {
     $devInstall = $true
-} else {
+}
+else {
     Write-Host "Do you want to install the following developer programs?"
-    for ($i=0; $i -lt $devApps.Length; $i++) {
+    for ($i = 0; $i -lt $devApps.Length; $i++) {
         Write-Host "$i. $($devApps[$i])"
     }
     $userInput = Read-Host "(y/N)"
@@ -341,9 +389,10 @@ if ($args -contains "-d") {
 $uninstall = $false
 if ($args -contains "--uninstalls") {
     $uninstall = $true
-} else {
+}
+else {
     Write-Host "Do you want to UNinstall the following programs?"
-    for ($i=0; $i -lt $appsToRemove.Length; $i++) {
+    for ($i = 0; $i -lt $appsToRemove.Length; $i++) {
         Write-Host "$i. $($appsToRemove[$i])" -ForegroundColor Red
     }
     $userInput = Read-Host "(y/N)"
@@ -355,7 +404,8 @@ if ($args -contains "--uninstalls") {
 $updates = $false
 if ($args -contains "--updates") {
     $updates = $true
-} else {
+}
+else {
     $userInput = Read-Host "Do you want to run updates for installed programs? (y/N)"
     if ($userInput -eq "y") {
         $updates = $true
@@ -366,7 +416,8 @@ if ($args -contains "--updates") {
 $powerAdjust = $false
 if ($args -contains "--power") {
     $powerAdjust = $true
-} else {
+}
+else {
     Write-Host "Do you want to power settings for maximum performance?"
     $userInput = Read-Host "(y/N)"
     if ($userInput -eq "y") {
@@ -378,7 +429,8 @@ if ($args -contains "--power") {
 $json = $false
 if ($args -contains "--json") {
     $json = $true
-} else {
+}
+else {
     Write-Host "Do you want to save a json report of the system?"
     $userInput = Read-Host "(y/N)"
     if ($userInput -eq "y") {
@@ -397,55 +449,56 @@ if ($appsInstall) {
     Write-Host "Installing base applications that require scope declaration."
     Install-Apps -apps $appsScopeRequired -source "winget" -scope "machine"
     Write-Host "Done installing base applications that require scope declaration."
-} else {
+}
+else {
     Write-Host "Skipping base applications" -ForegroundColor Cyan
 }
     
 # Install optional applications
 if ($optionalInstall) {
     Write-Output "Installing optional applications..."
-     Install-Apps -apps $optionalApps
+    Install-Apps -apps $optionalApps
     Write-Output "Done installing optional applications!"
 }
 if ($optionalExtendedInstall) {
     Write-Output "Installing other optional applications..."
-     Install-Apps -apps $optionalAppsWithComplications
+    Install-Apps -apps $optionalAppsWithComplications
     Write-Output "Done installing other optional applications!"
 }
 # Install dev applications
 if ($devInstall) {
     Write-Output "Installing Developer Applications..."
-     Install-Apps -apps $devApps -source "winget"
+    Install-Apps -apps $devApps -source "winget"
     Write-Output "Done installing developer applications!"
 }
 
 # Remove apps
 if ($uninstall) {
     Write-Output "Uninstalling general applications..."
-     Uninstall-Apps -apps $appsToRemove
+    Uninstall-Apps -apps $appsToRemove
     Write-Output "Done Uninstalling general applications!"
     Write-Output "Uninstalling Dell specific applications..."
-     Uninstall-Apps -apps $dellAppsToRemove
+    Uninstall-Apps -apps $dellAppsToRemove
     Write-Output "Done uninstalling applications!"
 }
 if ($updates) {
     Write-Output "Updating installed applications..."
-     runUpdates
+    runUpdates
     Write-Output "Done updating installed applications!"
 }
 
 # update power settings
 if ($powerAdjust) {
     Write-Output "Updating power settings..."
-        powercfg.exe -x -monitor-timeout-ac 60
-        powercfg.exe -x -monitor-timeout-dc 60
-        powercfg.exe -x -disk-timeout-ac 0
-        powercfg.exe -x -disk-timeout-dc 0
-        powercfg.exe -x -standby-timeout-ac 0
-        powercfg.exe -x -standby-timeout-dc 0
-        powercfg.exe -x -hibernate-timeout-ac 0
-        powercfg.exe -x -hibernate-timeout-dc 0
-        powercfg.exe -h off
+    powercfg.exe -x -monitor-timeout-ac 60
+    powercfg.exe -x -monitor-timeout-dc 60
+    powercfg.exe -x -disk-timeout-ac 0
+    powercfg.exe -x -disk-timeout-dc 0
+    powercfg.exe -x -standby-timeout-ac 0
+    powercfg.exe -x -standby-timeout-dc 0
+    powercfg.exe -x -hibernate-timeout-ac 0
+    powercfg.exe -x -hibernate-timeout-dc 0
+    powercfg.exe -h off
     Write-Output "Done updating power settings!"
 }
 
