@@ -86,6 +86,7 @@ $dellAppsToRemove = @(
     "Dell Digital Delivery", 
     "Dell Digital Delivery Services", 
     "Dell Display Manager",
+    "Dell Display Manager 2.3",
     "Dell Mobile Connect", 
     "Dell Optimizer Core",
     "Dell PremierColor", 
@@ -440,7 +441,7 @@ else {
 
 # Install applications
 if ($appsInstall) {
-    Write-Host "Installing base applications..."
+    Write-Host "Installing base applications... (if it pauses for a long time press y and then enter)"
     Install-Apps -apps $apps
     Write-Host "Done Installing base applications!"
     Write-Host "Installing base applications with special needs."
