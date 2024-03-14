@@ -90,14 +90,24 @@ $dellAppsToRemove = @(
     "Dell Mobile Connect", 
     "Dell Optimizer Core",
     "Dell PremierColor", 
-    "Dell Peripheral Manger", 
+    "{389E5E66-84BC-4CCF-B0D2-3887E9E2E271}",
+    "{16AE9E0C-0E0C-4AD6-82B4-D0F8AB94082F}",
+    "Dell Peripheral Manager", 
     "Dell SupportAssist", 
     "Dell SupportAssist for Dell Update", 
     "Dell SupportAssist for Home PCs", 
     "Dell SupportAssist OS Recovery Plugin for Dell Update", 
     "Dell SupportAssist Remediation", 
-    "Dell Trusted Device Agent", 
-    "Dell Watchdog Timer"
+    "Dell Trusted Device Agent",
+    "{2F3E37A4-8F48-465A-813B-1F2964DBEB6A}", 
+    "Dell Watchdog Timer",
+    "Power2Go for Dell",
+    "PowerDirector for Dell",
+    "DellTypeCStatus",
+    "DB6EA5DB.MediaSuiteEssentialsforDell_mcezb6ze687jp",
+    "DB6EA5DB.Power2GoforDell_mcezb6ze687jp",
+    "DB6EA5DB.PowerDirectorforDell_mcezb6ze687jp",
+    "DB6EA5DB.PowerMediaPlayerforDell_mcezb6ze687jp"
 )
 
 # Define the progress title
