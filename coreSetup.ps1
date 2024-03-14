@@ -406,6 +406,9 @@ else {
     for ($i = 0; $i -lt $appsToRemove.Length; $i++) {
         Write-Host "$i. $($appsToRemove[$i])" -ForegroundColor Red
     }
+    for ($i = $i; $i -lt $dellAppsToRemove.Length; $i++) {
+        Write-Host "$i. $($dellAppsToRemove[$i])" -ForegroundColor Red
+    }
     $userInput = Read-Host "(y/N)"
     if ($userInput -eq "y") {
         $uninstall = $true
