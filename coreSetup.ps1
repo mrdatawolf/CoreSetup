@@ -111,7 +111,7 @@ $dellAppsToRemove = @(
 )
 
 # Define the progress title
-$progressTitle = "Created by MrDataWolf. Version: $versionNumber"
+$progressTitle = "Created by Patrick Moon. Version: $versionNumber"
 
 # Define the list of possible clients
 $clients = @("test")
