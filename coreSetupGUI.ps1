@@ -529,11 +529,11 @@ $location.Y += $buttonY
 # buttons -----
 
 #Run Batch
-$buttonPowerSettings = New-Object "System.Windows.Forms.Button"
-$buttonPowerSettings.Location = New-Object System.Drawing.Point($location.X, $location.Y)
-$buttonPowerSettings.Size = New-Object System.Drawing.Size($buttonX, 20)
-$buttonPowerSettings.Text = "Do it!"
-$buttonPowerSettings.Add_Click({ 
+$buttonBatch = New-Object "System.Windows.Forms.Button"
+$buttonBatch.Location = New-Object System.Drawing.Point($location.X, $location.Y)
+$buttonBatch.Size = New-Object System.Drawing.Size($buttonX, 20)
+$buttonBatch.Text = "Do it!"
+$buttonBatch.Add_Click({ 
     $textBox.AppendText("Running batch...`r`n")
     #sanity checks
     $textBox.AppendText("Invoking Sanity Checks`r`n")
@@ -590,7 +590,7 @@ $buttonPowerSettings.Add_Click({
     $overallProgressBar.Value = 100
 })
 $location.X += $buttonX
-$main_form.Controls.Add($buttonPowerSettings)
+$main_form.Controls.Add($buttonBatch)
 
 $timerLabel = New-Object System.Windows.Forms.Label
 $timerLabel.Location = New-Object Drawing.Point($location.X,$location.Y)
