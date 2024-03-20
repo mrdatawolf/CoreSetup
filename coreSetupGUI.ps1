@@ -171,25 +171,25 @@ function powerSetup {
     )
     $subProgressBar.Value = 1
     $subProgressBarStatus.Text = "Updating Monitor Power settings"
-    $textBox.AppendText = "Updating Monitor Power settings`r`n"
+    $textBox.AppendText("Updating Monitor Power settings`r`n")
     powercfg.exe -x -monitor-timeout-ac 60
     $subProgressBar.Value = 10
     powercfg.exe -x -monitor-timeout-dc 60
     $subProgressBar.Value = 20
     $subProgressBarStatus.Text = "Updating Disk Power settings"
-    $textBox.AppendText = "Updating disk Power settings`r`n"
+    $textBox.AppendText("Updating disk Power settings`r`n")
     powercfg.exe -x -disk-timeout-ac 0
     $subProgressBar.Value = 30
     powercfg.exe -x -disk-timeout-dc 0
     $subProgressBar.Value = 40
     $subProgressBarStatus.Text = "Updating Standby Power settings"
-    $textBox.AppendText = "Updating Standby Power settings`r`n"
+    $textBox.AppendText("Updating Standby Power settings`r`n")
     powercfg.exe -x -standby-timeout-ac 0
     $subProgressBar.Value = 50
     powercfg.exe -x -standby-timeout-dc 0
     $subProgressBar.Value = 60
     $subProgressBarStatus.Text = "Updating Hibernate Power settings"
-    $textBox.AppendText = "Updating Hibernate Power settings`r`n"
+    $textBox.AppendText("Updating Hibernate Power settings`r`n")
     powercfg.exe -x -hibernate-timeout-ac 0
     $subProgressBar.Value = 70
     powercfg.exe -x -hibernate-timeout-dc 0
@@ -207,13 +207,13 @@ function Invoke-Sanity-Checks {
     )
     $subProgressBar.Value = 1
     $subProgressBarStatus.Text = "Checking powershell version"
-    $textBox.AppendText = "Checking powershell version`r`n"
+    $textBox.AppendText("Checking powershell version`r`n")
     if ($PSVersionTable.PSVersion.Major -lt 5) {
-        $textBox.AppendText = "Your powershell is too old!`r`n"
+        $textBox.AppendText("Your powershell is too old!`r`n")
     }
     $subProgressBar.Value = 50
     $subProgressBarStatus.Text = "Checking winget"
-    $textBox.AppendText = "Checking winget`r`n"
+    $textBox.AppendText("Checking winget`r`n")
     # Check if winget is installed
     try {
         $wingetCheck = Get-Command winget -ErrorAction Stop
@@ -233,14 +233,106 @@ function Invoke-Base-Updates {
     )
     $subProgressBar.Value = 1
     $subProgressBarStatus.Text = "Running winget source update"
-    $textBox.AppendText = "Running winget source update`r`n"
+    $textBox.AppendText("Running winget source update`r`n")
     winget source update
     $subProgressBar.Value = 50
     $subProgressBarStatus.Text = "Running winget updates"
-    $textBox.AppendText = "Running winget updates`r`n"
+    $textBox.AppendText("Running winget updates`r`n")
     winget update --all --silent
     $subProgressBar.Value = 100
     $subProgressBarStatus.Text = "Done`r`n"
+}
+
+function Read-GeneralInfo {
+    return @{
+        "Date Create"    = Get-Date -Format "yyyy-MM-dd"
+        "Script Version" = 1
+        "OS Version"     = (Get-CimInstance -ClassName Win32_OperatingSystem).Version
+        "ServiceTag"     = (Get-CimInstance -ClassName win32_bios).SerialNumber
+        "Hostname"       = $env:computername
+        "Domain"         = $env:USERDOMAIN
+    }
+}
+
+function Read-PrinterInfo {
+    $printerNames = Get-Printer | Select-Object -ExpandProperty Name
+    $printerInfo = @{}
+    for ($i = 0; $i -lt $printerNames.Count; $i++) {
+        $printerInfo["Printer $($i + 1)"] = $printerNames[$i]
+    }
+
+    return $printerInfo
+}
+
+function Read-NetworkInfo {
+    $ipAddresses = Get-NetIPAddress | Where-Object { $_.AddressFamily -eq "IPv4" } | Select-Object InterfaceAlias, IpAddress
+    $ipAddressesInfo = @{}
+    for ($i = 0; $i -lt $ipAddresses.Count; $i++) {
+        $ipAddressesInfo["IP $($i + 1)"] = $ipAddresses[$i].IPAddress
+    }
+
+    return $ipAddressesInfo
+}
+
+function Read-LocalShareInfo {
+    $shares = (Get-SmbShare | Where-Object { $_.ScopeName -eq "Default" }).Name
+    $sharesInfo = @{}
+    for ($i = 0; $i -lt $shares.Count; $i++) {
+        $sharesInfo["Share $($i + 1)"] = $shares[$i]
+    }
+
+    return $sharesInfo
+}
+
+function Read-RemoteShareInfo {
+    $shares = @(Get-PSDrive -PSProvider FileSystem | Where-Object { $_.DisplayRoot -like "\\*\*" }).Root
+    $sharesInfo = @{}
+    for ($i = 0; $i -lt $shares.Count; $i++) {
+        $sharesInfo["Share $($i + 1)"] = $shares[$i]
+    }
+
+    return $sharesInfo
+}
+
+
+function Invoke-System-Info-Gather {
+    $ipAddresses = Invoke-Command -ScriptBlock {
+        Get-NetIPAddress | Where-Object { $_.AddressFamily -eq "IPv4" } | Select-Object InterfaceAlias, IpAddress
+    }
+    $currentUser = $env:USERNAME
+    $shares = Invoke-Command -ScriptBlock {
+        (Get-SmbShare | Where-Object { $_.ScopeName -eq "Default" }).Name
+    }
+    $remoteShares = Invoke-Command -ScriptBlock {
+        (Get-PSDrive -PSProvider FileSystem | Where-Object { $_.DisplayRoot -like "\\*\*" }).DisplayRoot
+    }
+    $printers = Invoke-Command -ScriptBlock {
+        Get-Printer | Select-Object Name
+    }
+    $drives = @(Invoke-Command -ScriptBlock {
+            Get-PSDrive -PSProvider 'FileSystem' | Select-Object Name, @{Name = "Size(GB)"; Expression = { [math]::Round($_.Used / 1GB) } }, @{Name = "FreeSpace(GB)"; Expression = { [math]::Round($_.Free / 1GB) } }
+        })
+    $domain = $env:USERDOMAIN
+    $serviceInfoObj = @{
+        "Date Create"    = $date
+        "Script Version" = $versionNumber
+        "OS Version"     = $osVersion
+        "ClientName"     = $client
+        "Domain"         = $domain
+        "ServiceTag"     = $serviceTag
+        "IPAddresses"    = $ipAddresses
+        "LoggedInUser"   = $currentUser
+        "Printers"       = $printers
+        "Shares"         = $shares
+        "RemoteShares"   = $remoteShares
+        "Drives"         = $drives
+        "Hostname"       = $hostname
+    }
+    $serviceInfoJson = ConvertTo-Json $serviceInfoObj -Depth 4
+    $jsonFilePath = "~\Desktop\SystemInfo~$client~$domain~$hostname.json"
+    $serviceInfoJson | Out-File -FilePath $jsonFilePath -Encoding ascii
+
+    return $serviceInfoJson
 }
 
 function New-ProgressBar {
@@ -283,7 +375,6 @@ function New-TextBox {
         [System.Windows.Forms.Form]$Form,
         [string]$Text
     )
-    
     $textBox = New-Object "System.Windows.Forms.TextBox"
     $textBox.Location = New-Object System.Drawing.Point($CurrentLocation.X, $CurrentLocation.Y)
     $textBox.Size = New-Object System.Drawing.Size($ObjectDimensions.Width, $ObjectDimensions.Height)
@@ -292,12 +383,54 @@ function New-TextBox {
     $textBox.Readonly = $true
     $textBox.Text = $Text
     $Form.Controls.Add($textBox)
-
     $CurrentLocation.X = 10
     $CurrentLocation.Y += $ObjectDimensions.Height
 
     return $textBox
 }
+
+function New-DataGridViewFromHashtable {
+    param(
+        [hashtable] $ObjectDimensions = @{ Width=1024; Height=100 },
+        [PSCustomObject]$CurrentLocation,
+        [System.Windows.Forms.Form]$Form,
+        [hashtable]$hashTable
+    )
+    if ($hashTable.Count -eq 0) {
+        Write-Host "The hashtable is empty."
+    } else {
+        # Convert the hashtable to a DataTable
+        $dataTable = New-Object System.Data.DataTable
+        $hashTable.Keys | Where-Object { $_ } | ForEach-Object {
+            $dataTable.Columns.Add($_) | Out-Null
+        }
+        $row = $dataTable.NewRow()
+        $hashTable.Keys | Where-Object { $_ } | ForEach-Object {
+            $row[$_]= $hashTable[$_]
+        }
+        $dataTable.Rows.Add($row)
+
+        # Create a new DataGridView
+        $dataGridView = New-Object System.Windows.Forms.DataGridView
+        $dataGridView.Location = New-Object System.Drawing.Point($CurrentLocation.X, $CurrentLocation.Y)
+        $dataGridView.Size = New-Object System.Drawing.Size($ObjectDimensions.Width, $ObjectDimensions.Height)
+        $dataGridView.AutoSizeColumnsMode = 'AllCells'
+        $dataGridView.AllowUserToAddRows = $false
+
+        # Add the DataGridView to the form
+        $Form.Controls.Add($dataGridView)
+
+        # Display the hashtable data
+        $dataGridView.DataSource = $dataTable
+
+        $CurrentLocation.X = 10
+        $CurrentLocation.Y += $ObjectDimensions.Height
+    }
+    return $dataGridView
+}
+
+
+
 function New-Button {
     param(
         [hashtable] $ObjectDimensions = @{ Width=100; Height=30 },
@@ -315,7 +448,6 @@ function New-Button {
 
     return $button
 }
-
 
 function Start-Animation {
     param (
@@ -349,7 +481,6 @@ function Stop-Animation {
     $timerLabel.Stop()
 }
 
-
 $main_form = New-Object System.Windows.Forms.Form
 $main_form.Text = "Core Setup"
 $main_form.Size = New-Object Drawing.Size @(1024, 600)
@@ -360,7 +491,9 @@ $buttonY = 20
 $location = New-Object -TypeName psobject -Property @{ X=10; Y=10 }
 $overallProgressBar, $overallProgressBarStatus = New-ProgressBar -CurrentLocation $location -Form $main_form -Label "Overall" -Status "Started"
 $overallProgressBar.Value = 10
-$subProgressBar, $subProgressBarStatus = New-ProgressBar -textBox $textBox -CurrentLocation $location -Form $main_form -Label "Current" -Status "Ready"
+
+#initial rows for progress and text
+$subProgressBar, $subProgressBarStatus = New-ProgressBar -CurrentLocation $location -Form $main_form -Label "Current" -Status "Ready"
 $subProgressBar.Value = 1
 $textBox = New-TextBox -CurrentLocation $location -Form $main_form -Text "Initial Text`r`n"
 
@@ -373,8 +506,6 @@ $buttonSanity.Add_Click({
     $textBox.AppendText("Invoking Sanity Checks`r`n")
     Invoke-Sanity-Checks -textBox $textBox -subProgressBar $subProgressBar -subProgressBarStatus $subProgressBarStatus -timerLabel $timerLabel
     $buttonSanity.Enabled = $false
-    $subProgressBarStatus.Text = "Done"
-    $textBox.AppendText("Done`r`n")
     $overallProgressBar.Value += 10
 })
 $location.X += $buttonX
@@ -389,7 +520,6 @@ $buttonUBase.Add_Click({
     $textBox.AppendText("Invoking Base Updates`r`n")
     Invoke-Base-Updates -textBox $textBox -subProgressBar $subProgressBar -subProgressBarStatus $subProgressBarStatus -timerLabel $timerLabel
     $buttonUBase.Enabled = $false
-    $textBox.AppendText("Done")
     $overallProgressBar.Value += 10
 })
 $location.X += $buttonX
@@ -410,12 +540,56 @@ $buttonBaseApps.Add_Click({
     $subProgressBar.Value = 1 
     Install-Apps -apps $appsScopeRequired -source "winget" -scope "machine" -textBox $textBox -subProgressBar $subProgressBar -subProgressBarStatus $subProgressBarStatus -timerLabel $timerLabel
     $buttonBaseApps.Enabled = $false
-    $subProgressBarStatus.Text = "Done"
-    $textBox.AppendText("Done`r`n")
     $overallProgressBar.Value += 10
 })
 $location.X += $buttonX
 $main_form.Controls.Add($buttonBaseApps)
+
+#uninstall Apps
+$buttonUninstallApps = New-Object "System.Windows.Forms.Button"
+$buttonUninstallApps.Location = New-Object System.Drawing.Point($location.X, $location.Y)
+$buttonUninstallApps.Size = New-Object System.Drawing.Size($buttonX, 20)
+$buttonUninstallApps.Text = "Uninstall Apps"
+$buttonUninstallApps.Add_Click({ 
+    $subProgressBar.Value = 1 
+    $appsCount = $appsToRemove.Count
+    $textBox.AppendText("Uninstalling $appsCount apps...`r`n")
+    Uninstall-Apps -apps $appsToRemove -textBox $textBox -subProgressBar $subProgressBar -subProgressBarStatus $subProgressBarStatus -timerLabel $timerLabel
+    $buttonUninstallApps.Enabled = $false
+    $overallProgressBar.Value += 10
+})
+$location.X += $buttonX
+$main_form.Controls.Add($buttonUninstallApps)
+
+#uninstall Dell Apps
+$buttonUninstallDellApps = New-Object "System.Windows.Forms.Button"
+$buttonUninstallDellApps.Location = New-Object System.Drawing.Point($location.X, $location.Y)
+$buttonUninstallDellApps.Size = New-Object System.Drawing.Size($buttonX, 20)
+$buttonUninstallDellApps.Text = "Dell Uninstalls"
+$buttonUninstallDellApps.Add_Click({ 
+    $subProgressBar.Value = 1 
+    $appsCount = $dellAppsToRemove.Count
+    $textBox.AppendText("Uninstalling $appsCount apps...`r`n")
+    Uninstall-Apps -apps $dellAppsToRemove -textBox $textBox -subProgressBar $subProgressBar -subProgressBarStatus $subProgressBarStatus -timerLabel $timerLabel
+    $buttonUninstallDellApps.Enabled = $false
+    $overallProgressBar.Value += 10
+})
+$location.X += $buttonX
+$main_form.Controls.Add($buttonUninstallDellApps)
+
+#Align power seetings
+$buttonPowerSettings = New-Object "System.Windows.Forms.Button"
+$buttonPowerSettings.Location = New-Object System.Drawing.Point($location.X, $location.Y)
+$buttonPowerSettings.Size = New-Object System.Drawing.Size($buttonX, 20)
+$buttonPowerSettings.Text = "Power Settings"
+$buttonPowerSettings.Add_Click({ 
+    $textBox.AppendText("Adjusting power settings...`r`n")
+    powerSetup -subProgressBar $subProgressBar -subProgressBarStatus $subProgressBarStatus -textBox $textBox
+    $buttonPowerSettings.Enabled = $false
+    $overallProgressBar.Value += 10
+})
+$location.X += $buttonX
+$main_form.Controls.Add($buttonPowerSettings)
 
 #optional Apps
 $buttonOptionalApps = New-Object "System.Windows.Forms.Button"
@@ -446,8 +620,6 @@ $buttonOptionalComplicationsApps.Add_Click({
     $textBox.AppendText("Installing $appsCount apps...`r`n")
     Install-Apps -apps $optionalAppsWithComplications -textBox $textBox -subProgressBar $subProgressBar -subProgressBarStatus $subProgressBarStatus -timerLabel $timerLabel
     $buttonOptionalComplicationsApps.Enabled = $false
-    $subProgressBarStatus.Text = "Done"
-    $textBox.AppendText("Done`r`n")
     $overallProgressBar.Value += 10
 })
 $location.X += $buttonX
@@ -464,89 +636,32 @@ $buttonDeveloperApps.Add_Click({
     $textBox.AppendText("Installing $appsCount apps...`r`n")
     Install-Apps -apps $devApps -source "winget" -textBox $textBox -subProgressBar $subProgressBar -subProgressBarStatus $subProgressBarStatus -timerLabel $timerLabel
     $buttonDeveloperApps.Enabled = $false
-    $subProgressBarStatus.Text = "Done"
-    $textBox.AppendText("Done`r`n")
     $overallProgressBar.Value += 10
 })
 $location.X += $buttonX
 $main_form.Controls.Add($buttonDeveloperApps)
 
-#uninstall Apps
-$buttonUninstallApps = New-Object "System.Windows.Forms.Button"
-$buttonUninstallApps.Location = New-Object System.Drawing.Point($location.X, $location.Y)
-$buttonUninstallApps.Size = New-Object System.Drawing.Size($buttonX, 20)
-$buttonUninstallApps.Text = "Uninstall Apps"
-$buttonUninstallApps.Add_Click({ 
-    $subProgressBar.Value = 1 
-    $appsCount = $appsToRemove.Count
-    $textBox.AppendText("Uninstalling $appsCount apps...`r`n")
-    Uninstall-Apps -apps $appsToRemove -textBox $textBox -subProgressBar $subProgressBar -subProgressBarStatus $subProgressBarStatus -timerLabel $timerLabel
-    $buttonUninstallApps.Enabled = $false
-    $subProgressBarStatus.Text = "Done"
-    $textBox.AppendText("Done`r`n")
-    $overallProgressBar.Value += 10
-})
-$location.X += $buttonX
-$main_form.Controls.Add($buttonUninstallApps)
-
-#uninstall Dell Apps
-$buttonUninstallDellApps = New-Object "System.Windows.Forms.Button"
-$buttonUninstallDellApps.Location = New-Object System.Drawing.Point($location.X, $location.Y)
-$buttonUninstallDellApps.Size = New-Object System.Drawing.Size($buttonX, 20)
-$buttonUninstallDellApps.Text = "Dell Uninstalls"
-$buttonUninstallDellApps.Add_Click({ 
-    $subProgressBar.Value = 1 
-    $appsCount = $dellAppsToRemove.Count
-    $textBox.AppendText("Uninstalling $appsCount apps...`r`n")
-    Uninstall-Apps -apps $dellAppsToRemove -textBox $textBox -subProgressBar $subProgressBar -subProgressBarStatus $subProgressBarStatus
-    $buttonUninstallDellApps.Enabled = $false
-    $subProgressBarStatus.Text = "Done"
-    $textBox.AppendText("Done`r`n")
-    $overallProgressBar.Value += 10
-})
-$location.X += $buttonX
-$main_form.Controls.Add($buttonUninstallDellApps)
-
-#Align power seetings
-$buttonPowerSettings = New-Object "System.Windows.Forms.Button"
-$buttonPowerSettings.Location = New-Object System.Drawing.Point($location.X, $location.Y)
-$buttonPowerSettings.Size = New-Object System.Drawing.Size($buttonX, 20)
-$buttonPowerSettings.Text = "Power Settings"
-$buttonPowerSettings.Add_Click({ 
-    $subProgressBar.Value = 1 
-    $textBox.AppendText("Adjusting power settings...`r`n")
-    powerSetup
-    $buttonPowerSettings.Enabled = $false
-    $subProgressBarStatus.Text = "Done"
-    $textBox.AppendText("Done`r`n")
-    $overallProgressBar.Value += 10
-})
-$location.X += $buttonX
-$main_form.Controls.Add($buttonPowerSettings)
-
 $location.X = 10
 $location.Y += $buttonY
-# buttons -----
+
+# Single task buttons -----
 
 #Run Batch
 $buttonBatch = New-Object "System.Windows.Forms.Button"
 $buttonBatch.Location = New-Object System.Drawing.Point($location.X, $location.Y)
 $buttonBatch.Size = New-Object System.Drawing.Size($buttonX, 20)
-$buttonBatch.Text = "Do it!"
+$buttonBatch.Text = "Run Common"
 $buttonBatch.Add_Click({ 
     $textBox.AppendText("Running batch...`r`n")
     #sanity checks
     $textBox.AppendText("Invoking Sanity Checks`r`n")
-    Invoke-Sanity-Checks -subProgressBar $subProgressBar -subProgressBarStatus $subProgressBarStatus -timerLabel $timerLabel
+    Invoke-Sanity-Checks -subProgressBar $subProgressBar -subProgressBarStatus $subProgressBarStatus -timerLabel $timerLabel -textBox $textBox
     $buttonSanity.Enabled = $false
-    $subProgressBarStatus.Text = "Done"
-    $textBox.AppendText("Done`r`n")
     $overallProgressBar.Value += 10
     #base updates
     $textBox.AppendText("Invoking Base Updates`r`n")
-    Invoke-Base-Updates -subProgressBar $subProgressBar -subProgressBarStatus $subProgressBarStatus -timerLabel $timerLabel
+    Invoke-Base-Updates -subProgressBar $subProgressBar -subProgressBarStatus $subProgressBarStatus -timerLabel $timerLabel -textBox $textBox
     $buttonUBase.Enabled = $false
-    $textBox.AppendText("Done")
     $overallProgressBar.Value += 10
     #Installing base apps
     $appsCount = $apps.Count + $appsScopeRequired.Count + $appThatNeedWingetSourceDeclared.Count
@@ -557,40 +672,51 @@ $buttonBatch.Add_Click({
     $subProgressBar.Value = 1 
     Install-Apps -apps $appsScopeRequired -source "winget" -scope "machine" -textBox $textBox -subProgressBar $subProgressBar -subProgressBarStatus $subProgressBarStatus -timerLabel $timerLabel
     $buttonBaseApps.Enabled = $false
-    $subProgressBarStatus.Text = "Done"
-    $textBox.AppendText("Done`r`n")
     $overallProgressBar.Value += 10
     #uninstall apps
     $appsCount = $appsToRemove.Count
     $textBox.AppendText("Uninstalling $appsCount apps...`r`n")
     Uninstall-Apps -apps $appsToRemove -textBox $textBox -subProgressBar $subProgressBar -subProgressBarStatus $subProgressBarStatus -timerLabel $timerLabel
     $buttonUninstallApps.Enabled = $false
-    $subProgressBarStatus.Text = "Done"
-    $textBox.AppendText("Done`r`n")
     $overallProgressBar.Value += 10
     #uninstall dell apps
     $appsCount = $dellAppsToRemove.Count
     $textBox.AppendText("Uninstalling $appsCount apps...`r`n")
-    Uninstall-Apps -apps $dellAppsToRemove -textBox $textBox -subProgressBar $subProgressBar -subProgressBarStatus $subProgressBarStatus
+    Uninstall-Apps -apps $dellAppsToRemove -textBox $textBox -subProgressBar $subProgressBar -subProgressBarStatus $subProgressBarStatus -timerLabel $timerLabel
     $buttonUninstallDellApps.Enabled = $false
-    $subProgressBarStatus.Text = "Done"
-    $textBox.AppendText("Done`r`n")
     $overallProgressBar.Value += 10
     #power settings
     $textBox.AppendText("Adjusting power settings...`r`n")
-    powerSetup
+    powerSetup -subProgressBar $subProgressBar -subProgressBarStatus $subProgressBarStatus -textBox $textBox
     $buttonPowerSettings.Enabled = $false
-    $subProgressBarStatus.Text = "Done"
-    $textBox.AppendText("Done`r`n")
     $overallProgressBar.Value += 10
 
-    $buttonPowerSettings.Enabled = $false
+    $buttonBatch.Enabled = $false
     $subProgressBarStatus.Text = "Batch Done"
     $textBox.AppendText("Batch Done`r`n")
     $overallProgressBar.Value = 100
 })
 $location.X += $buttonX
 $main_form.Controls.Add($buttonBatch)
+
+#Show Info Gather
+$location.X = 10
+$location.Y += 20
+$RGI = Read-GeneralInfo
+$RPI = Read-PrinterInfo
+$RNI = Read-NetworkInfo
+$RLSI = Read-LocalShareInfo
+$RRSI = Read-RemoteShareInfo
+$dataGridViewRGI = New-DataGridViewFromHashtable -CurrentLocation $location -Form $main_form -hashTable $RGI
+$location.X = 10
+$dataGridViewRPI = New-DataGridViewFromHashtable -CurrentLocation $location -Form $main_form -hashTable $RPI
+$location.X = 10
+$dataGridViewRNI = New-DataGridViewFromHashtable -CurrentLocation $location -Form $main_form -hashTable $RNI
+$location.X = 10
+$dataGridViewRLSI = New-DataGridViewFromHashtable -CurrentLocation $location -Form $main_form -hashTable $RLSI
+$location.X = 10
+$dataGridViewRRSI = New-DataGridViewFromHashtable -CurrentLocation $location -Form $main_form -hashTable $RRSI
+$location.X = 10
 
 $timerLabel = New-Object System.Windows.Forms.Label
 $timerLabel.Location = New-Object Drawing.Point($location.X,$location.Y)
