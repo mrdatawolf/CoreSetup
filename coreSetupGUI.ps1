@@ -4,7 +4,7 @@ Add-Type -assembly System.Windows.Forms
 if (-NOT ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")) {
     # orginal: Start-Process -FilePath "powershell" -ArgumentList "-File .\coreSetup.ps1" -Verb RunAs
     # We are not running as administrator, so start a new process with 'RunAs'
-    #Start-Process powershell.exe "-File", ($myinvocation.MyCommand.Definition) -Verb RunAs
+    Start-Process powershell.exe "-File", ($myinvocation.MyCommand.Definition) -Verb RunAs
     #exit
 }
 
