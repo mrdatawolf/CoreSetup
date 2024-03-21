@@ -86,6 +86,8 @@ $dellAppsToRemove = @(
     "Dell Digital Delivery", 
     "Dell Digital Delivery Services", 
     "Dell Display Manager",
+    "Dell Display Manager 2.1",
+    "Dell Display Manager 2.2",
     "Dell Display Manager 2.3",
     "Dell Mobile Connect", 
     "Dell Optimizer Core",

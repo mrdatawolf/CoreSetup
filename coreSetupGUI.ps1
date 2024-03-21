@@ -5,7 +5,7 @@ if (-NOT ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdent
     # orginal: Start-Process -FilePath "powershell" -ArgumentList "-File .\coreSetup.ps1" -Verb RunAs
     # We are not running as administrator, so start a new process with 'RunAs'
     Start-Process powershell.exe "-File", ($myinvocation.MyCommand.Definition) -Verb RunAs
-    #exit
+    exit
 }
 
 $apps = @("Mozilla.Firefox")
@@ -46,6 +46,8 @@ $dellAppsToRemove = @(
     "Dell Digital Delivery", 
     "Dell Digital Delivery Services", 
     "Dell Display Manager",
+    "Dell Display Manager 2.1",
+    "Dell Display Manager 2.2",
     "Dell Display Manager 2.3",
     "Dell Mobile Connect", 
     "Dell Optimizer Core",
