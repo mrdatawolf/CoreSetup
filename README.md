@@ -1,5 +1,5 @@
 # CoreSetup
-Link https://github.com/mrdatawolf/CoreSetup/blob/main/coreSetupGUI.exe
+[Download EXE version here] (https://github.com/mrdatawolf/CoreSetup/raw/main/coreSetupGUI.exe)
 
 
 Uses winget to uninstall apps we don't want on systems.
