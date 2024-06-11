@@ -1,9 +1,12 @@
 # CoreSetup
 [Download coreSetup EXE version here](https://github.com/mrdatawolf/CoreSetup/raw/main/coreSetupGUI.exe)
 
+**Right-click here and select "Save link as..." to download the script.**
+
 [Download coreSetup PS1 version here](https://github.com/mrdatawolf/CoreSetup/raw/main/coreSetup.ps1)
 
 [Download coreUpdate PS1 here](https://github.com/mrdatawolf/CoreSetup/raw/main/coreUpdate.ps1)
+
 
 Uses winget to uninstall apps we don't want on systems.
 Also uses winget to installs various apps we want.
