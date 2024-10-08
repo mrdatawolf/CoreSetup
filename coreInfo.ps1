@@ -1,10 +1,7 @@
-# Define the parameters for noDisplay and client
 param (
-    [switch]$noDisplay,
+    [switch]$automatic,
     [string]$client
 )
-
-$progressTitle = "Created by Patrick Moon."
 
 # Check if the client name is provided as an argument
 if (-not $client) {
@@ -20,7 +17,7 @@ function outputProgress {
         [Parameter(Mandatory = $true, Position = 1)]
         [int] $Progress
     )
-    Write-Progress -Activity $progressTitle -Status $Status -PercentComplete $Progress
+    Write-Progress -Activity "Catchphrase!" -Status $Status -PercentComplete $Progress
 }
 
 function autogatherInfo {
@@ -107,13 +104,14 @@ function autogatherInfo {
     # Convert the object to a JSON string
     $serviceInfoJson = ConvertTo-Json $serviceInfoObj -Depth 4
 
-    # Define the default file path and name to the user's desktop
-    $jsonFilePath = "~\Desktop\SystemInfo~$client~$domain~$hostname.json"
+    $basePath = "C:\Biztech"
+    if (-Not (Test-Path -Path $basePath)) {
+        New-Item -Path $basePath -ItemType Directory
+    }
+    $jsonFilePath = "$basePath\SystemInfo~$client~$domain~$hostname.json"
     # Write the service information to the CSV file
     $serviceInfoJson | Out-File -FilePath $jsonFilePath -Encoding ascii
-
-    # Open the file in Edge if noDisplay is not specified
-    if (-not $noDisplay) {
+    if (-not $automatic) {
         $fullPath = Resolve-Path -Path $jsonFilePath
         Start-Process "msedge.exe" $fullPath
     }
