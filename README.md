@@ -24,7 +24,7 @@ Get the latest version at https://github.com/mrdatawolf/CoreSetup
 set-executionpolicy remotesigned 
 then Y when it asks how to change it.
 ### If it is just sitting on the winget update task 
-press y and enter.  It is acutally asking if you agree to the souce agreement terms. if you want to actually see the original prompt open a powershell window and do winget list instead.
+press y and enter.  It is actually asking if you agree to the souce agreement terms. if you want to actually see the original prompt open a powershell window and do winget list instead.
 ### If it closes right away or you see a ExecutionPolicy error
 1. Win10
 * Set-ExecutionPolicy Unrestricted
