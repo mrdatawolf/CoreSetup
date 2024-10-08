@@ -20,6 +20,7 @@ function outputProgress {
     Write-Progress -Activity "Catchphrase!" -Status $Status -PercentComplete $Progress
 }
 
+$baseFolder = "ChangeMe"
 function autogatherInfo {
     outputProgress "Getting Date..." 05
     # Get the current date and format it as yyyy-MM-dd
@@ -104,7 +105,7 @@ function autogatherInfo {
     # Convert the object to a JSON string
     $serviceInfoJson = ConvertTo-Json $serviceInfoObj -Depth 4
 
-    $basePath = "C:\Biztech"
+    $basePath = "C:\$baseFolder"
     if (-Not (Test-Path -Path $basePath)) {
         New-Item -Path $basePath -ItemType Directory
     }
