@@ -1,6 +1,4 @@
 # CoreSetup
-[Download coreSetup EXE version here](https://github.com/mrdatawolf/CoreSetup/raw/main/coreSetupGUI.exe)
-
 **Right-click here and select "Save link as..." to download the script.**
 
 [Download coreSetup PS1 version here](https://github.com/mrdatawolf/CoreSetup/raw/main/coreSetup.ps1)
@@ -16,7 +14,7 @@ Get the latest version at https://github.com/mrdatawolf/CoreSetup
 
 **Because it's a powershell script you need to allow it to run on your system.  If you don't know what this means then DO NOT USE this script.**
 **Fully run the Windows and Dell updates before this!!!!!** 
-**It needs the Windows updates to be done and Dell apps will be removed.**
+**Why? Because it needs the updates from windows update for winget and other sub-systems and the Dell apps will be removed.**
 **To minimize issues - Open a powershell prompt first and type winget list.  Answer yes.**
 
 ## Common solutions for first runs

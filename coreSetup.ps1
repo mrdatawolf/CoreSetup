@@ -17,9 +17,6 @@ Uninstall common applications.
 .PARAMETER --updates
 Update installed applications.
 
-.PARAMETER --noauto
-If set the autogathering of info will be skipped.
-
 .PARAMETER --nobase
 If set we will not install the base apps (like firefox).
 
@@ -114,9 +111,6 @@ $dellAppsToRemove = @(
 
 # Define the progress title
 $progressTitle = "Created by Patrick Moon. Version: $versionNumber"
-
-# Define the list of possible clients
-$clients = @("test")
 
 #show progress
 function outputProgress {
@@ -240,83 +234,6 @@ function powerSetup {
     powercfg.exe -h off
 }
 
-function autogatherInfo {
-    outputProgress "Getting Date..." 05
-    # Get the current date and format it as yyyy-MM-dd
-    $date = Get-Date -Format "yyyy-MM-dd"
-    outputProgress "Getting OS version..." 10
-    # Get the Windows version number
-    $osVersion = (Get-CimInstance -ClassName Win32_OperatingSystem).Version
-    outputProgress "Getting HOSTNAME tag..." 15
-    # Get the hostname for the computer
-    $hostname = $env:computername
-    outputProgress "Getting service tag..." 20
-    # Get the Dell service tag
-    $serviceTag = Invoke-Command -ScriptBlock {
-        Get-CimInstance -ClassName win32_bios | Select-Object -ExpandProperty SerialNumber
-    }
-    outputProgress "Getting IP addresses..." 30
-    # Get all network IP addresses
-    $ipAddresses = Invoke-Command -ScriptBlock {
-        Get-NetIPAddress | Where-Object { $_.AddressFamily -eq "IPv4" } | Select-Object InterfaceAlias, IpAddress
-    }
-    outputProgress "Getting current user..." 40
-    # Get the currently logged in user
-    $currentUser = $env:USERNAME
-    outputProgress "Getting shared drives..." 50
-    # Get a list of shared drives and their locations
-    $shares = Invoke-Command -ScriptBlock {
-        (Get-SmbShare | Where-Object { $_.ScopeName -eq "Default" }).Name
-    }
-    outputProgress "Getting remote shares..." 60
-    # Get a list of remote shares and their paths
-    $remoteShares = Invoke-Command -ScriptBlock {
-        (Get-PSDrive -PSProvider FileSystem | Where-Object { $_.DisplayRoot -like "\\*\*" }).DisplayRoot
-    }
-    outputProgress "Getting printers..." 70
-    # Get a list of printers and their names
-    $printers = Invoke-Command -ScriptBlock {
-        Get-Printer | Select-Object Name
-    }
-    outputProgress "Getting drives..." 80
-    # Get a list of all drives and their size and free space
-    $drives = @(Invoke-Command -ScriptBlock {
-            Get-PSDrive -PSProvider 'FileSystem' | Select-Object Name, @{Name = "Size(GB)"; Expression = { [math]::Round($_.Used / 1GB) } }, @{Name = "FreeSpace(GB)"; Expression = { [math]::Round($_.Free / 1GB) } }
-        })
-    outputProgress "Getting domain..." 90
-    # Get the domain the computer is connected to
-    $domain = $env:USERDOMAIN
-    outputProgress "Finished gathering data!" 100
-    # Create a custom object to store the service tag, IP addresses, machine name, logged in user, printers, shared drives, remote shares, and folders
-    $serviceInfoObj = @{
-        "Date Create"    = $date
-        "Script Version" = $versionNumber
-        "OS Version"     = $osVersion
-        "ClientName"     = $client
-        "Domain"         = $domain
-        "ServiceTag"     = $serviceTag
-        "IPAddresses"    = $ipAddresses
-        "LoggedInUser"   = $currentUser
-        "Printers"       = $printers
-        "Shares"         = $shares
-        "RemoteShares"   = $remoteShares
-        "Drives"         = $drives
-        "Hostname"       = $hostname
-    }
-
-    # Convert the object to a JSON string
-    $serviceInfoJson = ConvertTo-Json $serviceInfoObj -Depth 4
-
-    # Define the default file path and name to the user's desktop
-    #$jsonFilePath = "$env:USERPROFILE\Desktop\SystemInfo_$hostname.json"
-    $jsonFilePath = "~\Desktop\SystemInfo~$client~$domain~$hostname.json"
-
-
-    # Write the service information to the CSV file
-    $serviceInfoJson | Out-File -FilePath $jsonFilePath -Encoding ascii
-    $serviceInfoObj | Select-Object * | Out-GridView -Title "Service information was saved to $jsonFilePath"
-}
-
 #check that we have current winget sources
 Write-Host "updating winget sources"
 winget source update
@@ -328,16 +245,6 @@ Write-Host "==============================" -ForegroundColor Cyan
 Invoke-Sanity-Checks
 if ($args -contains "--noauto") {
     Write-Host "Skipping base installs" -ForegroundColor Cyan
-}
-else {
-    # Prompt user to select a client if no argument is provided
-    Write-Host "Choose a client to gather information from:" -ForegroundColor Cyan
-    Write-Host "Please select a client:"
-    for ($i = 0; $i -lt $clients.Length; $i++) {
-        Write-Host "$i. $($clients[$i])"
-    }
-    $clientIndex = Read-Host "Enter the number corresponding to the client you want to select"
-    $client = $clients[$clientIndex]
 }
 
 #see what the user wants to run
@@ -404,7 +311,7 @@ if ($args -contains "--uninstalls") {
     $uninstall = $true
 }
 else {
-    Write-Host "Do you want to UNinstall the following programs?"
+    Write-Host "Do you want to Uninstall the following programs?"
     for ($i = 0; $i -lt $appsToRemove.Length; $i++) {
         Write-Host "$i. $($appsToRemove[$i])" -ForegroundColor Red
     }
@@ -438,19 +345,6 @@ else {
     $userInput = Read-Host "(y/N)"
     if ($userInput -eq "y") {
         $powerAdjust = $true
-    }
-}
-
-# Check for noauto argument
-$json = $false
-if ($args -contains "--json") {
-    $json = $true
-}
-else {
-    Write-Host "Do you want to save a json report of the system?"
-    $userInput = Read-Host "(y/N)"
-    if ($userInput -eq "y") {
-        $json = $true
     }
 }
 
@@ -517,10 +411,5 @@ if ($powerAdjust) {
     powercfg.exe -h off
     Write-Output "Done updating power settings!"
 }
-
-if ($json) {
-    Write-Host "Gathering general info on the computer and saving it in the folder you ran this script from." -ForegroundColor Cyan
-    autogatherInfo
-} 
 
 Write-Host "Completed." -ForegroundColor Cyan
