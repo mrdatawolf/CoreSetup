@@ -12,12 +12,6 @@ coreUpdate
 Requires winget. Also you might need to run "Set-ExecutionPolicy Unrestricted" to use powershell scripts.
 
 #>
-# Check if we are running as administrator
-if (-NOT ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")) {
-    # We are not running as administrator, so start a new process with 'RunAs'
-    Start-Process powershell.exe "-File", ($myinvocation.MyCommand.Definition) -Verb RunAs
-    exit
-}
 #Patrick Moon - 2024
 # Written by Patrick Moon
 # Get the latest version at https://github.com/mrdatawolf/CoreSetup
