@@ -24,9 +24,9 @@ then Y when it asks how to change it.
 ### If it is just sitting on the winget update task 
 press y and enter.  It is actually asking if you agree to the souce agreement terms. if you want to actually see the original prompt open a powershell window and do winget list instead.
 ### If it closes right away or you see a ExecutionPolicy error
-1. Win10
+1. Win10 Pro
 * Set-ExecutionPolicy Unrestricted
-2. Win11
+2. Win11 Pro
 * Set-ExecutionPolicy -Scope CurrentUser Unrestricted
 
 ## You can also try
@@ -35,4 +35,7 @@ To run an unsigned script, use the Unblock-File cmdlet or use the following proc
 1. Save the script file on your computer.
 2. Click Start, click My Computer, and locate the saved script file.
 3. Right-click the script file, and then click Properties.
-4. Click Unblock. 
+4. Click Unblock.
+
+<!-- INSTALL_COMMAND: curl -L -o coreSetup.ps1 https://github.com/mrdatawolf/CoreSetup/raw/main/coreSetup.ps1 -->
+<!-- RUN_COMMAND: ./coreSetup.ps1 -->
