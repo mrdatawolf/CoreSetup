@@ -37,5 +37,5 @@ To run an unsigned script, use the Unblock-File cmdlet or use the following proc
 3. Right-click the script file, and then click Properties.
 4. Click Unblock.
 
-<!-- INSTALL_COMMAND: curl -L -o coreSetup.ps1 https://github.com/mrdatawolf/CoreSetup/raw/main/coreSetup.ps1 -->
+<!-- INSTALL_COMMAND: curl -o coreSetup.ps1 https://github.com/mrdatawolf/CoreSetup/raw/main/coreSetup.ps1 -->
 <!-- RUN_COMMAND: ./coreSetup.ps1 -->
