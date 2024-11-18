@@ -108,6 +108,23 @@ $dellAppsToRemove = @(
     "DB6EA5DB.PowerDirectorforDell_mcezb6ze687jp",
     "DB6EA5DB.PowerMediaPlayerforDell_mcezb6ze687jp"
 )
+$hpAppsToRemove = @(
+    "HP Audio Switch",
+    "HP Documentation",
+    "HP JumpStart Bridge",
+    "HP JumpStart Launch",
+    "HP Support Assistant",
+    "HP System Event Utility"
+)
+
+$lenovoAppsToRemove = @(
+    "Lenovo Vantage",
+    "Lenovo System Update",
+    "Lenovo Utility",
+    "Lenovo Service Bridge",
+    "Lenovo Quick Clean",
+    "Lenovo Migration Assistant"
+)
 
 # Define the progress title
 $progressTitle = "Created by Patrick Moon. Version: $versionNumber"
@@ -305,24 +322,60 @@ else {
         $devInstall = $true
     }
 }
+
 # Check for uninstall argument
 $uninstall = $false
 if ($args -contains "--uninstalls") {
     $uninstall = $true
+    $uninstallCommonApps = $true
+    $uninstallLenovoApps = $true
+    $uninstallDellApps = $true
+    $uninstallHpApps = $true
 }
 else {
-    Write-Host "Do you want to Uninstall the following programs?"
+    Write-Host "Do you want to uninstall common Windows applications?"
     for ($i = 0; $i -lt $appsToRemove.Length; $i++) {
         Write-Host "$i. $($appsToRemove[$i])" -ForegroundColor Red
     }
-    for ($i = $i; $i -lt $dellAppsToRemove.Length; $i++) {
+    $userInput = Read-Host "(y/N)"
+    if ($userInput -eq "y") {
+        $uninstall = $true
+        $uninstallCommonApps = $true
+    }
+
+    Write-Host "Do you want to uninstall Dell applications?"
+    for ($i = 0; $i -lt $dellAppsToRemove.Length; $i++) {
         Write-Host "$i. $($dellAppsToRemove[$i])" -ForegroundColor Red
     }
     $userInput = Read-Host "(y/N)"
     if ($userInput -eq "y") {
         $uninstall = $true
+        $uninstallDellApps = $true
+    }
+
+    Write-Host "Do you want to uninstall HP applications?"
+    for ($i = 0; $i -lt $hpAppsToRemove.Length; $i++) {
+        Write-Host "$i. $($hpAppsToRemove[$i])" -ForegroundColor Red
+    }
+    $userInput = Read-Host "(y/N)"
+    if ($userInput -eq "y") {
+        $uninstall = $true
+        $uninstallHpApps = $true
+    }
+
+    Write-Host "Do you want to uninstall Lenovo applications?"
+    for ($i = 0; $i -lt $lenovoAppsToRemove.Length; $i++) {
+        Write-Host "$i. $($lenovoAppsToRemove[$i])" -ForegroundColor Red
+    }
+    $userInput = Read-Host "(y/N)"
+    if ($userInput -eq "y") {
+        $uninstall = $true
+        $uninstallLenovoApps = $true
     }
 }
+
+
+
 #Check if we should also just run updates for applications still on the system
 $updates = $false
 if ($args -contains "--updates") {
@@ -382,14 +435,28 @@ if ($devInstall) {
     Write-Output "Done installing developer applications!"
 }
 
-# Remove apps
+# Ask questions and uninstall apps based on user input
 if ($uninstall) {
-    Write-Output "Uninstalling general applications..."
-    Uninstall-Apps -apps $appsToRemove
-    Write-Output "Done Uninstalling general applications!"
-    Write-Output "Uninstalling Dell specific applications..."
-    Uninstall-Apps -apps $dellAppsToRemove
-    Write-Output "Done uninstalling applications!"
+    if ($uninstallCommonApps) {
+        Write-Output "Uninstalling general applications..."
+        Uninstall-Apps -apps $appsToRemove
+        Write-Output "Done uninstalling general applications!"
+    }
+    if ($uninstallDellApps) {
+        Write-Output "Uninstalling Dell specific applications..."
+        Uninstall-Apps -apps $dellAppsToRemove
+        Write-Output "Done uninstalling Dell applications!"
+    }
+    if ($uninstallHpApps) {
+        Write-Output "Uninstalling HP specific applications..."
+        Uninstall-Apps -apps $hpAppsToRemove
+        Write-Output "Done uninstalling HP applications!"
+    }
+    if ($uninstallLenovoApps) {
+        Write-Output "Uninstalling Lenovo specific applications..."
+        Uninstall-Apps -apps $lenovoAppsToRemove
+        Write-Output "Done uninstalling Lenovo applications!"
+    }
 }
 if ($updates) {
     Write-Output "Updating installed applications..."
