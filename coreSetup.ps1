@@ -129,7 +129,8 @@ $hpAppsToRemove = @(
     "HP PC Hardware Diagnostics Windows",
     "HP Privacy Settings",
     "HP Support Assistant",
-    "myHP"
+    "myHP",
+    "Poly Lens"
 )
 
 $lenovoAppsToRemove = @(
@@ -495,3 +496,4 @@ if ($powerAdjust) {
 }
 
 Write-Host "Completed." -ForegroundColor Cyan
+Pause
