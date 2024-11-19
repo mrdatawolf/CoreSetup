@@ -114,7 +114,22 @@ $hpAppsToRemove = @(
     "HP JumpStart Bridge",
     "HP JumpStart Launch",
     "HP Support Assistant",
-    "HP System Event Utility"
+    "HP System Event Utility",
+    "HP Sure Run Module",
+    "HP One Agent",
+    "HP Sure Recover",
+    "HP Security Update Service",
+    "HP Wolf Security - Console",
+    "HP Wolf Security",
+    "HP Notifications",
+    "HP Insights",
+    "HP Connection Optimizer",
+    "HP Desktop Support Utilities",
+    "HP Easy Clean",
+    "HP PC Hardware Diagnostics Windows",
+    "HP Privacy Settings",
+    "HP Support Assistant",
+    "myHP"
 )
 
 $lenovoAppsToRemove = @(
