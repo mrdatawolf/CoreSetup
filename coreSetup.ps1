@@ -146,7 +146,7 @@ $lenovoAppsToRemove = @(
 $progressTitle = "Created by Patrick Moon. Version: $versionNumber"
 
 #show progress
-function outputProgress {
+function OutputProgress {
     Param
     (
         [Parameter(Mandatory = $true, Position = 0)]
@@ -248,14 +248,14 @@ function Uninstall-Apps {
         }
     }
 }
-function runUpdates {
+function RunUpdates {
     Write-Progress -Activity "Getting the most current source list"
     winget source update
     Write-Progress -Activity "Updating the applications"
     winget update --all --silent
 }
 
-function powerSetup {
+function PowerSetup {
     powercfg.exe -x -monitor-timeout-ac 0
     powercfg.exe -x -monitor-timeout-dc 0
     powercfg.exe -x -disk-timeout-ac 0
@@ -265,6 +265,11 @@ function powerSetup {
     powercfg.exe -x -hibernate-timeout-ac 0
     powercfg.exe -x -hibernate-timeout-dc 0
     powercfg.exe -h off
+}
+
+function DoPublicDiscovery {
+    Set-NetFirewallRule -DisplayGroup "Network Discovery" -Enabled True -Profile Public
+    Set-NetFirewallRule -DisplayGroup "File And Printer Sharing" -Enabled True -Profile Public
 }
 
 #check that we have current winget sources
@@ -304,7 +309,6 @@ else {
         $appsInstall = $false
     }
 }
-# Check for optional argument
 if ($args -contains "-o") {
     $optionalInstall = $true
 }
@@ -323,7 +327,6 @@ else {
         }
     }
 }
-# Check for dev argument
 $devInstall = $false
 if ($args -contains "-d") {
     $devInstall = $true
@@ -338,8 +341,6 @@ else {
         $devInstall = $true
     }
 }
-
-# Check for uninstall argument
 $uninstall = $false
 if ($args -contains "--uninstalls") {
     $uninstall = $true
@@ -389,10 +390,6 @@ else {
         $uninstallLenovoApps = $true
     }
 }
-
-
-
-#Check if we should also just run updates for applications still on the system
 $updates = $false
 if ($args -contains "--updates") {
     $updates = $true
@@ -403,21 +400,27 @@ else {
         $updates = $true
     }
 }
-
-# Check for power argument
 $powerAdjust = $false
 if ($args -contains "--power") {
     $powerAdjust = $true
-}
-else {
+} else {
     Write-Host "Do you want to power settings for maximum performance?"
     $userInput = Read-Host "(y/N)"
     if ($userInput -eq "y") {
         $powerAdjust = $true
     }
 }
-
-# Install applications
+$allowPublicDiscovery = $false
+if ($args -contains "--public") {
+    $allowPublicDiscovery = $true
+    
+} else {
+    Write-Host "Do you want to the computer to be discoverable on public networks?"
+    $publicDiscoveryInput = Read-Host "(y/N)"
+    if($publicDiscoveryInput -eq "y") {
+        $allowPublicDiscovery = $true
+    }
+}
 if ($appsInstall) {
     Write-Host "Installing base applications... (if it pauses for a long time press y and then enter)"
     Install-Apps -apps $apps
@@ -432,8 +435,6 @@ if ($appsInstall) {
 else {
     Write-Host "Skipping base applications" -ForegroundColor Cyan
 }
-    
-# Install optional applications
 if ($optionalInstall) {
     Write-Output "Installing optional applications..."
     Install-Apps -apps $optionalApps
@@ -444,14 +445,11 @@ if ($optionalExtendedInstall) {
     Install-Apps -apps $optionalAppsWithComplications
     Write-Output "Done installing other optional applications!"
 }
-# Install dev applications
 if ($devInstall) {
     Write-Output "Installing Developer Applications..."
     Install-Apps -apps $devApps -source "winget"
     Write-Output "Done installing developer applications!"
 }
-
-# Ask questions and uninstall apps based on user input
 if ($uninstall) {
     if ($uninstallCommonApps) {
         Write-Output "Uninstalling general applications..."
@@ -476,24 +474,19 @@ if ($uninstall) {
 }
 if ($updates) {
     Write-Output "Updating installed applications..."
-    runUpdates
+    RunUpdates
     Write-Output "Done updating installed applications!"
 }
 
-# update power settings
 if ($powerAdjust) {
     Write-Output "Updating power settings..."
-    powercfg.exe -x -monitor-timeout-ac 60
-    powercfg.exe -x -monitor-timeout-dc 60
-    powercfg.exe -x -disk-timeout-ac 0
-    powercfg.exe -x -disk-timeout-dc 0
-    powercfg.exe -x -standby-timeout-ac 0
-    powercfg.exe -x -standby-timeout-dc 0
-    powercfg.exe -x -hibernate-timeout-ac 0
-    powercfg.exe -x -hibernate-timeout-dc 0
-    powercfg.exe -h off
+    PowerSetup
     Write-Output "Done updating power settings!"
 }
 
-Write-Host "Completed." -ForegroundColor Cyan
+if ($allowPublicDiscovery) {
+   DoPublicDiscovery
+}
+
+Write-Host "Completed" -ForegroundColor Cyan
 Pause
