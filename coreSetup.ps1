@@ -48,14 +48,11 @@ if (-NOT ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdent
 $apps = @("Mozilla.Firefox")
 $appsScopeRequired = @("Google.Chrome")
 $appThatNeedWingetSourceDeclared = @("Adobe Acrobat Reader DC")
-# Optional installs
 $optionalApps = @("SonicWALL.NetExtender", "Microsoft.Powershell", "tightvnc")
 $optionalAppsWithComplications = @("Microsoft 365")
-#dev installs
 $devApps = @("git.git", "vscode", "github desktop", "JanDeDobbeleer.OhMyPosh", "nvm-windows")
 
-# List of applications names to install. Note: uninstall uses name because the id cane change, install uses id
-# Uninstall applications
+# List of applications names to uninstall. Note: uninstall uses name because the id cane change, install uses id
 $appsToRemove = @(
     "Game Bar", 
     "LinkedIn", 
@@ -132,7 +129,6 @@ $hpAppsToRemove = @(
     "myHP",
     "Poly Lens"
 )
-
 $lenovoAppsToRemove = @(
     "Lenovo Vantage",
     "Lenovo System Update",
@@ -141,8 +137,6 @@ $lenovoAppsToRemove = @(
     "Lenovo Quick Clean",
     "Lenovo Migration Assistant"
 )
-
-# Define the progress title
 $progressTitle = "Created by Patrick Moon. Version: $versionNumber"
 
 #show progress
@@ -191,7 +185,6 @@ function Install-App {
         winget install $app --silent 
     }
 }
-
 function Install-Apps {
     param (
         [Parameter(Mandatory = $true)]
@@ -254,7 +247,6 @@ function RunUpdates {
     Write-Progress -Activity "Updating the applications"
     winget update --all --silent
 }
-
 function PowerSetup {
     powercfg.exe -x -monitor-timeout-ac 0
     powercfg.exe -x -monitor-timeout-dc 0
@@ -266,10 +258,13 @@ function PowerSetup {
     powercfg.exe -x -hibernate-timeout-dc 0
     powercfg.exe -h off
 }
-
 function DoPublicDiscovery {
     Set-NetFirewallRule -DisplayGroup "Network Discovery" -Enabled True -Profile Public
     Set-NetFirewallRule -DisplayGroup "File And Printer Sharing" -Enabled True -Profile Public
+}
+function DoRemoteDesktop {
+    Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server' -name "fDenyTSConnections" -value 0
+    Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
 }
 
 #check that we have current winget sources
@@ -421,6 +416,17 @@ if ($args -contains "--public") {
         $allowPublicDiscovery = $true
     }
 }
+$allowRemoteDesktop = $false
+if ($args -contains "--remote") {
+    $allowRemoteDesktop = $true
+    
+} else {
+    Write-Host "Do you want to the computer to all remote desktop?"
+    $remoteDesktopInput = Read-Host "(y/N)"
+    if($remoteDesktopInput -eq "y") {
+        $allowRemoteDesktop = $true
+    }
+}
 if ($appsInstall) {
     Write-Host "Installing base applications... (if it pauses for a long time press y and then enter)"
     Install-Apps -apps $apps
@@ -486,6 +492,10 @@ if ($powerAdjust) {
 
 if ($allowPublicDiscovery) {
    DoPublicDiscovery
+}
+
+if ($allowRemoteDesktop) {
+    DoRemoteDesktop
 }
 
 Write-Host "Completed" -ForegroundColor Cyan
