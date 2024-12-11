@@ -48,9 +48,10 @@ if (-NOT ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdent
 $apps = @("Mozilla.Firefox")
 $appsScopeRequired = @("Google.Chrome")
 $appThatNeedWingetSourceDeclared = @("Adobe Acrobat Reader DC")
-$optionalApps = @("SonicWALL.NetExtender", "Microsoft.Powershell", "tightvnc")
+$optionalApps = @("SonicWALL.NetExtender", "Microsoft.Powershell")
 $optionalAppsWithComplications = @("Microsoft 365")
 $devApps = @("git.git", "vscode", "github desktop", "JanDeDobbeleer.OhMyPosh", "nvm-windows")
+$remoteAccessApps = @("tightvnc")
 
 # List of applications names to uninstall. Note: uninstall uses name because the id cane change, install uses id
 $appsToRemove = @(
@@ -115,9 +116,9 @@ $hpAppsToRemove = @(
     "HP Sure Run Module",
     "HP One Agent",
     "HP Sure Recover",
-    "HP Security Update Service",
-    "HP Wolf Security - Console",
     "HP Wolf Security",
+    "HP Wolf Security - Console",
+    "HP Security Update Service",
     "HP Notifications",
     "HP Insights",
     "HP Connection Optimizer",
@@ -265,6 +266,7 @@ function DoPublicDiscovery {
 function DoRemoteDesktop {
     Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server' -name "fDenyTSConnections" -value 0
     Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
+    Install-Apps -apps $remoteAccessApps
 }
 
 #check that we have current winget sources
@@ -421,7 +423,7 @@ if ($args -contains "--remote") {
     $allowRemoteDesktop = $true
     
 } else {
-    Write-Host "Do you want to the computer to all remote desktop?"
+    Write-Host "Do you want to the computer to enable remote desktop and install vnc?"
     $remoteDesktopInput = Read-Host "(y/N)"
     if($remoteDesktopInput -eq "y") {
         $allowRemoteDesktop = $true
