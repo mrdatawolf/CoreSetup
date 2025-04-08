@@ -269,6 +269,19 @@ function DoRemoteDesktop {
     Install-Apps -apps $remoteAccessApps
 }
 
+function RemoveAndBlockNewOutlook {
+    # Path to the registry key
+    $regPath = "HKEY_LOCAL_MACHINE \ SOFTWARE \ Microsoft \ WindowsUpdate \Orchestrator \UScheduler_Oobe"
+    # Create the registry key if it doesn't exist
+    if (-not (Test-Path $regPath)) {
+        New-Item -Path $regPath -Force
+    }
+    # Set the registry value to block new Outlook
+    Set-ItemProperty -Path $regPath -Name "BlockedOobeUpdaters" -Value [“MS_Outlook”] -Type REG_SZ
+
+    Remove-AppxProvisionedPackage -AllUsers -Online -PackageName (Get-AppxPackage Microsoft.OutlookForWindows).PackageFullName
+}
+
 #check that we have current winget sources
 Write-Host "updating winget sources"
 winget source update
@@ -429,6 +442,16 @@ if ($args -contains "--remote") {
         $allowRemoteDesktop = $true
     }
 }
+$allowRemoveAndBlockNewOutlook = $false
+if ($args -contains "--remove-new-outlook") {
+    $allowRemoveAndBlockNewOutlook = $true
+} else {
+    Write-Host "Do you want to remove and block new outlook?"
+    $removeNewOutlookInput = Read-Host "(y/N)"
+    if($removeNewOutlookInput -eq "y") {
+        $allowRemoveAndBlockNewOutlook = $true
+    }
+}
 if ($appsInstall) {
     Write-Host "Installing base applications... (if it pauses for a long time press y and then enter)"
     Install-Apps -apps $apps
@@ -498,6 +521,10 @@ if ($allowPublicDiscovery) {
 
 if ($allowRemoteDesktop) {
     DoRemoteDesktop
+}
+
+if ($allowRemoveAndBlockNewOutlook) {
+    RemoveAndBlockNewOutlook
 }
 
 Write-Host "Completed" -ForegroundColor Cyan
