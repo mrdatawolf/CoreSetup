@@ -271,16 +271,32 @@ function DoRemoteDesktop {
 
 function RemoveAndBlockNewOutlook {
     # Path to the registry key
-    $regPath = "HKEY_LOCAL_MACHINE \ SOFTWARE \ Microsoft \ WindowsUpdate \Orchestrator \UScheduler_Oobe"
+    $regPath = "HKLM:\SOFTWARE\Microsoft\WindowsUpdate\Orchestrator\UScheduler_Oobe"
+    
     # Create the registry key if it doesn't exist
     if (-not (Test-Path $regPath)) {
         New-Item -Path $regPath -Force
     }
+    
     # Set the registry value to block new Outlook
-    Set-ItemProperty -Path $regPath -Name "BlockedOobeUpdaters" -Value [“MS_Outlook”] -Type REG_SZ
-
-    Remove-AppxProvisionedPackage -AllUsers -Online -PackageName (Get-AppxPackage Microsoft.OutlookForWindows).PackageFullName
+    $propertyName = "BlockedOobeUpdaters"
+    $propertyValue = "MS_Outlook"
+    
+    try {
+        # Attempt to set the property
+        Set-ItemProperty -Path $regPath -Name $propertyName -Value $propertyValue
+    } catch {
+        # If the property doesn't exist, create it
+        New-ItemProperty -Path $regPath -Name $propertyName -Value $propertyValue -PropertyType String -Force
+    }
+    
+    # Remove the new Outlook app if it's already installed
+    $outlookPackage = Get-AppxPackage -Name "Microsoft.OutlookForWindows"
+    if ($outlookPackage) {
+        Remove-AppxProvisionedPackage -AllUsers -Online -PackageName $outlookPackage.PackageFullName
+    }
 }
+
 
 #check that we have current winget sources
 Write-Host "updating winget sources"
