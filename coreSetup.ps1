@@ -472,7 +472,7 @@ if ($appsInstall) {
     Install-Apps -apps $apps
     Write-Host "Done Installing base applications!"
     Write-Host "Installing base applications with special needs."
-    Install-Apps -apps $appThatNeedWingetSourceDeclared -source "winget"
+    Install-Apps -apps $appThatNeedWingetSourceDeclared -source "msstore"
     Write-Host "Done installing base applications with special needs."
     Write-Host "Installing base applications that require scope declaration."
     Install-Apps -apps $appsScopeRequired -source "winget" -scope "machine"
