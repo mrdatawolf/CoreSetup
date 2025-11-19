@@ -44,6 +44,9 @@ Enable Remote Desktop and install TightVNC
 .PARAMETER RemoveNewOutlook
 Remove and block the new Outlook app
 
+.PARAMETER DisableWiFiAndBluetooth
+Disable WiFi and Bluetooth network adapters
+
 .EXAMPLE
 coreSetup.ps1 -InstallBaseApps -InstallOptionalApps
 
@@ -69,13 +72,15 @@ param(
     [switch]$AdjustPowerSettings,
     [switch]$EnablePublicDiscovery,
     [switch]$EnableRemoteDesktop,
-    [switch]$RemoveNewOutlook
+    [switch]$RemoveNewOutlook,
+    [switch]$DisableWiFiAndBluetooth
 )
 
 # Detect if running in GUI mode (any parameters provided)
 $guiMode = $InstallBaseApps -or $InstallOptionalApps -or $InstallOffice365 -or $InstallDevApps -or
            $UninstallWindowsApps -or $UninstallDellApps -or $UninstallHPApps -or $UninstallLenovoApps -or
-           $RunUpdates -or $AdjustPowerSettings -or $EnablePublicDiscovery -or $EnableRemoteDesktop -or $RemoveNewOutlook
+           $RunUpdates -or $AdjustPowerSettings -or $EnablePublicDiscovery -or $EnableRemoteDesktop -or $RemoveNewOutlook -or
+           $DisableWiFiAndBluetooth
 
 # Check if we are running as administrator
 if (-NOT ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")) {
@@ -360,6 +365,46 @@ function RemoveAndBlockNewOutlook {
     }
 }
 
+function DisableWiFiAndBluetooth {
+    Write-Output "→ Disabling WiFi and Bluetooth adapters..."
+
+    # Disable WiFi adapters
+    Write-Output "  - Searching for WiFi adapters..."
+    $wifiAdapters = Get-NetAdapter | Where-Object {$_.InterfaceDescription -match "wireless|wi-fi|802.11"}
+    if ($wifiAdapters) {
+        foreach ($adapter in $wifiAdapters) {
+            Write-Output "  - Disabling $($adapter.Name) ($($adapter.InterfaceDescription))..."
+            try {
+                Disable-NetAdapter -Name $adapter.Name -Confirm:$false -ErrorAction Stop
+                Write-Output "    ✓ WiFi adapter disabled"
+            } catch {
+                Write-Output "    ✗ Failed to disable WiFi adapter: $_"
+            }
+        }
+    } else {
+        Write-Output "  - No WiFi adapters found"
+    }
+
+    # Disable Bluetooth adapters
+    Write-Output "  - Searching for Bluetooth adapters..."
+    $bluetoothAdapters = Get-NetAdapter | Where-Object {$_.InterfaceDescription -match "bluetooth"}
+    if ($bluetoothAdapters) {
+        foreach ($adapter in $bluetoothAdapters) {
+            Write-Output "  - Disabling $($adapter.Name) ($($adapter.InterfaceDescription))..."
+            try {
+                Disable-NetAdapter -Name $adapter.Name -Confirm:$false -ErrorAction Stop
+                Write-Output "    ✓ Bluetooth adapter disabled"
+            } catch {
+                Write-Output "    ✗ Failed to disable Bluetooth adapter: $_"
+            }
+        }
+    } else {
+        Write-Output "  - No Bluetooth adapters found"
+    }
+
+    Write-Output "✓ WiFi and Bluetooth disable operation completed"
+}
+
 # ============================================
 # Main Execution
 # ============================================
@@ -515,6 +560,16 @@ if ($RemoveNewOutlook) {
     Write-Output "REMOVING AND BLOCKING NEW OUTLOOK"
     Write-Output "========================================"
     RemoveAndBlockNewOutlook
+    Write-Output ""
+}
+
+# Disable WiFi and Bluetooth
+if ($DisableWiFiAndBluetooth) {
+    $operationsRun++
+    Write-Output "========================================"
+    Write-Output "DISABLING WIFI AND BLUETOOTH"
+    Write-Output "========================================"
+    DisableWiFiAndBluetooth
     Write-Output ""
 }
 
