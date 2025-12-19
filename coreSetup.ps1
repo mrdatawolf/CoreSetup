@@ -189,13 +189,35 @@ $lenovoAppsToRemove = @(
 
 # Functions
 function Invoke-Sanity-Checks {
-    # Check if the script is running in PowerShell
-    if ($PSVersionTable.PSVersion.Major -lt 5) {
-        Write-Output "✗ ERROR: This script must be run in PowerShell 5 or later."
+    # Check if the script is running in PowerShell 7 or later
+    Write-Output "→ Checking PowerShell version..."
+    if ($PSVersionTable.PSVersion.Major -lt 7) {
+        Write-Output "✗ ERROR: This script requires PowerShell 7 or later."
+        Write-Output "  Current version: $($PSVersionTable.PSVersion)"
+        Write-Output "  Download PowerShell 7+ from: https://aka.ms/powershell"
         exit 1
+    }
+    Write-Output "✓ PowerShell $($PSVersionTable.PSVersion) detected"
+
+    # Check if running on Windows Home edition
+    Write-Output "→ Checking Windows edition..."
+    try {
+        $osInfo = Get-CimInstance -ClassName Win32_OperatingSystem -ErrorAction Stop
+        $edition = $osInfo.Caption
+        if ($edition -match "Home") {
+            Write-Output "✗ ERROR: This script does not support Windows Home edition."
+            Write-Output "  Detected: $edition"
+            Write-Output "  This script requires Windows Pro, Enterprise, or Education."
+            exit 1
+        }
+        Write-Output "✓ Compatible Windows edition detected: $edition"
+    }
+    catch {
+        Write-Output "⚠️  WARNING: Could not verify Windows edition, continuing anyway..."
     }
 
     # Check if winget is installed
+    Write-Output "→ Checking for winget..."
     try {
         $wingetCheck = Get-Command winget -ErrorAction Stop
         Write-Output "✓ Winget is installed"
