@@ -88,8 +88,12 @@ if (-NOT ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdent
         Write-Error "This script must be run with administrator privileges. Please run the GUI as administrator."
         exit 1
     } else {
-        # CLI mode - relaunch with elevation
-        Start-Process powershell.exe "-File", ($myinvocation.MyCommand.Definition) -Verb RunAs
+        # CLI mode - relaunch with elevation, requires PS7+
+        if (-not (Get-Command pwsh.exe -ErrorAction SilentlyContinue)) {
+            Write-Error "PowerShell 7 or later is required. Please install it from https://aka.ms/powershell and re-run."
+            exit 1
+        }
+        Start-Process pwsh.exe "-File", ($myinvocation.MyCommand.Definition) -Verb RunAs
         exit
     }
 }
